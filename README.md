@@ -39,27 +39,45 @@ The universe covers 18-65 year old non-government employees, working full time (
       non-zero income: TPTOTINC > 0
 
 <h4>SCF</h4>
+
       full time: x4511 == 1
       non-government: x7402 < 9370
       age range: x14 >= 18 & x14 <= 65
       non-zero income: x4112 > 0
 
 
-(for each, how it is defined)
-
-
 Both the SIPP and the SCF provide information on respondents' access to retirement account benefits, their participation in these benefits, and whether their employers offer matching benefits.
 
 <h3>Retirement account access is defined as follows:</h3>
 
-for SIPP...
-for SCF...
+<h4>SIPP</h4>
+
+      Yes:
+            EMJOB_401 == 1 OR
+            EMJOB_IRA == 1 OR
+            EMJOB_PEN == 1
+
+      No: 
+            EMJOB_401 == 2 OR
+            EMJOB_IRA == 2 OR
+            EMJOB_PEN == 2 OR
+            EOWN_THR401  == 2 OR
+            EOWN_IRAKEO  == 2 OR
+            EOWN_PENSION == 2
+
+
+<h4>SCF</h4>
 
 <h3>Retirement participation is defined as follows:</h3>
 
+<h4>SIPP</h4>
+
+<h4>SCF</h4>
 
 <h3>Employer matching is defined as follows:</h3>
 
+<h4>SIPP</h4>
+<h4>SCF</h4>
 
 ***
 
