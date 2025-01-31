@@ -89,9 +89,9 @@ Both the SIPP and the SCF provide information on respondents' access to retireme
             ESCNTYN_401 == 2 OR      During the reference period, respondent did not contribute to the 401k, 403b, 503b, or Thrift Savings Plan account(s) provided through their main employer or business.      
             ESCNTYN_PEN == 2 OR      During the reference period, respondent did not contribute to the defined-benefit or cash balance plan(s) provided through their main employer or business.
             ESCNTYN_IRA == 2 OR      During the reference period, respondent did not contribute to the IRA or Keogh account(s) provided through their main employer or business.
-            EOWN_THR401  == 2 OR      Did not own any 401k, 403b, 503b, or Thrift Savings Plan accounts during the reference period.
-            EOWN_IRAKEO  == 2 OR      Did not own any IRA or Keogh accounts during the reference period.
-            EOWN_PENSION == 2         Did not participate in a defined-benefit pension or cash balance plan during the reference period.
+            EOWN_THR401  == 2 OR     Did not own any 401k, 403b, 503b, or Thrift Savings Plan accounts during the reference period.
+            EOWN_IRAKEO  == 2 OR     Did not own any IRA or Keogh accounts during the reference period.
+            EOWN_PENSION == 2        Did not participate in a defined-benefit pension or cash balance plan during the reference period.
 
 <h4>SCF</h4>
 
