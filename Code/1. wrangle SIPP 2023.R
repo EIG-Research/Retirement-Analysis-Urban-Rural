@@ -12,7 +12,8 @@ rm(list = ls())
 
 # load packages
 library(dplyr)
-library(haven)
+library(tidyr)
+library(readxl)
 
 # set user path
       project_directories <- list(
@@ -38,12 +39,20 @@ setwd(sipp_path)
 ####################
 # load in SIPP data
 
-sipp_2023_load = read_dta("pu2023.dta")
+  # Mac has a memory limit of 16.0 Gb. work-around -- read in via Stata, export subset as a .csv
+  # sipp_2023_load = read_dta("pu2023.dta")
+
+sipp_2023_load = read.csv("pu2023.csv")
+
 
 sipp_2023 = sipp_2023_load %>%
   
+  # filtering
   filter(MONTHCODE == 12) %>% # Retirement data is collected in December, so we can drop all other months here
-  mutate(
+ 
+   mutate(
+     #######################
+     # demographic variables
     EDUCATION = case_when(
       EEDUC >=31 & EEDUC <= 39 ~ "High School or less",
       EEDUC >= 40 & EEDUC <=42 ~ "Some college",
@@ -80,7 +89,31 @@ sipp_2023 = sipp_2023_load %>%
       EJB1_CLWRK == 8 ~ "Self-employed in own not incorporated business",
       TRUE ~ "Missing"
     ),
-    TOTYEARINC = TPTOTINC*12,
+    
+    TOTYEARINC = TPTOTINC*12, # monthly income
+    
+    METRO_STATUS = case_when(
+      TMETRO_INTV == 1 ~ "Metropolitan area",
+      TMETRO_INTV == 2 ~ "Nonmetropolitan area",
+      TMETRO_INTV == 3 ~ "Not identified",
+      TRUE ~ NA
+    ),
+    FULL_PART_TIME = case_when( # Define full time workers as those working at least 35 hours
+      TJB1_JOBHRS1 >=35 ~ "full time",
+      TJB1_JOBHRS1 >0 & TJB1_JOBHRS1< 35 ~ "part time",
+      TRUE ~ NA
+    ),
+    IN_AGE_RANGE = case_when(     # 18-65 ages
+      TAGE >= 18 & TAGE <= 65 ~ "yes",
+      TAGE >= 0 & TAGE <= 17 ~ "no",
+      TAGE >= 66 & TAGE <= 100 ~ "no",
+      TRUE ~ NA 
+    ),
+    
+    
+    #######################
+    # retirement variables
+    
     ANY_RETIREMENT_ACCESS = case_when(
       EMJOB_401 == 1 ~ "Yes", # Any 401k, 403b, 503b, or Thrift Savings Plan account(s) provided through main employer or business during the reference period.
       EMJOB_IRA == 1 ~ "Yes", # Any IRA or Keogh account(s) provided through main employer or business during the reference period.
@@ -116,24 +149,10 @@ sipp_2023 = sipp_2023_load %>%
       EOWN_PENSION == 2 ~ "No",
       # is.na(EECNTYN_401) ~ "No",
       TRUE ~ "Missing"
-    ),
-    METRO_STATUS = case_when(
-      TMETRO_INTV == 1 ~ "Metropolitan area",
-      TMETRO_INTV == 2 ~ "Nonmetropolitan area",
-      TMETRO_INTV == 3 ~ "Not identified",
-      TRUE ~ NA
-    ),
-    FULL_PART_TIME = case_when( # Define full time workers as those working at least 35 hours
-      TJB1_JOBHRS1 >=35 ~ "full time",
-      TJB1_JOBHRS1 >0 & TJB1_JOBHRS1< 35 ~ "part time",
-      TRUE ~ NA
-    ),
-    IN_AGE_RANGE = case_when(
-      TAGE >= 18 & TAGE <= 65 ~ "yes",
-      TAGE >= 0 & TAGE <= 17 ~ "no",
-      TAGE >= 66 & TAGE <= 100 ~ "no",
-      TRUE ~ NA 
-    ) # 18-65 ages
+    ), 
+    RETIREMENT_ACCT_VAL = 
+      TIRAKEOVAL + # Value of IRA and Keogh accounts as of the last day of the reference period.
+      TTHR401VAL # Value of 401k, 403b, 503b, and Thrift Savings Plan accounts as of the last day of the reference period.
   ) %>%
   select("SHHADID", "SPANEL", "SSUID", "SWAVE", "PNUM", "MONTHCODE", "WPFINWGT",
          "TAGE", "EDUCATION", "SEX", "RACE", "METRO_STATUS",
@@ -142,7 +161,40 @@ sipp_2023 = sipp_2023_load %>%
          "ANY_RETIREMENT_ACCESS",
          "PARTICIPATING",
          "MATCHING", "MONTHCODE", "TJB1_JOBHRS1", "TOTYEARINC",
-         "IN_AGE_RANGE","FULL_PART_TIME", "TVAL_RET")
+         "IN_AGE_RANGE","FULL_PART_TIME", "TVAL_RET",
+         "TJB1_IND",
+         "RETIREMENT_ACCT_VAL")
+
+
+
+# SIPP uses Census Bureau industry codes.
+# merge in industry codes from the census bureau; 2017 codes.
+
+industry_codes = read_excel(paste(
+  data_path, "Census Industry Codes",
+  "2017-industry-code-list-with-crosswalk .xlsx",
+  sep="/"),
+  sheet = "2017 Census Industry Code List",
+  skip=3) %>%
+  rename(INDUSTRY_BROAD = ...1,
+         INDUSTRY_DETAILED = `Industry 2017 Description`) %>%
+  select(-c(...3, contains("NAICS"))) %>%
+  
+  # fill broad industry types downward
+  fill(INDUSTRY_BROAD, .direction = "down") %>%
+  
+  # convert codes to numeric. dropps the 2nd order industry categories.
+  # generates NAs.
+  mutate(`2017 Census Code` = as.numeric(`2017 Census Code`)) %>%
+  na.omit() %>% distinct()
+  
+
+# merge in industry codes.
+sipp_2023 = sipp_2023 %>%
+  
+  left_join(industry_codes,
+            by = c("TJB1_IND" = "2017 Census Code"),
+            relationship = "many-to-one")
 
 
 ############################################################
@@ -166,7 +218,7 @@ sipp_2023 = sipp_2023 %>%
   filter(TPTOTINC >0)   %>% # earning an income 
 
 
-  # extract subsetted variables for export
+  # extract variables for export
   select("SHHADID", "SPANEL", "SSUID", "SWAVE", "PNUM", "MONTHCODE", "WPFINWGT",
          "TAGE", "EDUCATION", "SEX", "RACE", "METRO_STATUS",
          "EMPLOYMENT_TYPE", "CLASS_OF_WORKER",
@@ -174,14 +226,14 @@ sipp_2023 = sipp_2023 %>%
          "ANY_RETIREMENT_ACCESS",
          "PARTICIPATING",
          "MATCHING", "MONTHCODE", "TJB1_JOBHRS1", "TOTYEARINC",
-         "in_age_range","FULL_PART_TIME", "TVAL_RET")
-
+         "TVAL_RET",
+         "TJB1_IND",
+         "RETIREMENT_ACCT_VAL",
+         "INDUSTRY_BROAD",
+         "INDUSTRY_DETAILED"
+         )
 
 # save file
-setwd(path_output)
+setwd(output_path)
 
 save(sipp_2023, file = "SIPP_2023_WRANGLED.RData")
-
-
-  
-  
