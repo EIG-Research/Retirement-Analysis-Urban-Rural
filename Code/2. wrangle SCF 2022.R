@@ -72,16 +72,10 @@ scf_2022 = scf_2022_load %>%
     # DCPLANCJ
       x11032 > 0 ~ "Yes",
       x11132 > 0 ~ "Yes",
-      x11332 > 0 ~ "Yes",
-      x11432 > 0 ~ "Yes",
       x11032 == -1 ~ "Yes",
       x11132 == -1 ~ "Yes",
-      x11332 == -1 ~ "Yes",
-      x11432 == -1 ~ "Yes",
       x5316 == 1 & x6461 == 1 ~ "Yes",
       x5324 == 1 & x6466 == 1 ~ "Yes",
-      x5332 == 1 & x6471 == 1 ~ "Yes",
-      x5416 == 1 & x6476 == 1 ~ "Yes",
       TRUE ~ "No"),
     
     ANY_RETIREMENT_ACCESS = case_when(
