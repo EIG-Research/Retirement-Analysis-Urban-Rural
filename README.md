@@ -1,6 +1,6 @@
-<h1>INCERT POST TITLE HERE</h1>
+<h1>INSERT POST TITLE HERE</h1>
 
-This respository includes the data and necessary code to support EIG's analysis of retirement descriptives. You can find the analysis on our website [here](INCERT LINK).
+This respository includes the data and necessary code to support EIG's analysis of retirement descriptives. You can find the analysis on our website [here](INSERT LINK).
 
 All links are current at the time of publication. Contact Sarah Eckhardt with any questions at sarah@eig.org.
 
