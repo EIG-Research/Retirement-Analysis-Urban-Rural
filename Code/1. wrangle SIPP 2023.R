@@ -2,7 +2,7 @@
 
 # last update: 01/30/2025 by Sarah Eckhardt
 
-# Project: Retirement Update 20205; Urban versus Rural
+# Project: Retirement Update 2025; Urban versus Rural
 
 # File Description: read in 2023 SIPP data and prepare for analysis
 
@@ -17,7 +17,8 @@ library(readxl)
 
 # set user path
       project_directories <- list(
-        "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural"
+        "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural",
+        "jiaxinhe" = "/Users/jiaxinhe/Documents/projects/Retirement-Analysis-Urban-Rural"
       )
 
       current_user <- Sys.info()[["user"]]
