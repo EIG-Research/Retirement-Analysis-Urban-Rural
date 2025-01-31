@@ -43,16 +43,24 @@ ret_features <- c("TVAL_RET", "ANY_RETIREMENT_ACCESS", "MATCHING", "PARTICIPATIN
 ret_sipp_2023 <- sipp_2023 %>% filter(SPANEL == 2023, METRO_STATUS != "Not identified") %>%
   # convert yes-no responses into binary
   mutate(across(ret_features[-1], function(feature){ifelse(feature == "No",0,1)})) %>%
+  # weigh variables by population weight
+  mutate(across(ret_features, ~ .x * WPFINWGT, .names = "weighted_{.col}")) %>%
   # group by if residence is in a metro or non-metro area as proxy for urban-rural
   drop_na(METRO_STATUS) %>% group_by(METRO_STATUS) %>%
-  # find average retirement account size and fraction of respondents who:
+  # find weighted average retirement account size and fraction of respondents who:
   #   1. Has access to any employer retirement plan
   #   2. Employer offers matching retirement plan
   #   3. Participates in a retirement plan
-  summarise(across(ret_features, mean, na.rm = TRUE)) %>%
+  summarise(across(unlist(lapply(ret_features, FUN = function(x){paste0("weighted_", x)})),
+                   ~ sum(.x)/sum(WPFINWGT))) %>%
   # calculate size of urban / rural group
   left_join(sipp_2023 %>% filter(SPANEL == 2023, METRO_STATUS != "Not identified") %>%
-              count(METRO_STATUS), by = "METRO_STATUS")
+              count(METRO_STATUS), by = "METRO_STATUS") %>%
+  rename(AVG_ACCOUNT_SIZE = weighted_TVAL_RET,
+         SHARE_RETIREMENT_ACCESS = weighted_ANY_RETIREMENT_ACCESS,
+         SHARE_MATCHING = weighted_MATCHING,
+         SHARE_PARTICIPATION = weighted_PARTICIPATING,
+         SAMPLE_SIZE = n)
 
 # save output.
 setwd(output_path)
