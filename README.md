@@ -67,6 +67,14 @@ Both the SIPP and the SCF provide information on respondents' access to retireme
 
 <h4>SCF</h4>
 
+            Has access to a retirement plan:
+                  PARTICIPATES == yes      If the employee particiaptes, they have access
+                  x4136 == 1               Does (your/his/her/his or her) employer offer any such plans? (1 = yes)
+
+            Does not have access to a retirement plan: 
+                  Otherwise
+                  
+
 <h3>Retirement participation is defined as follows:</h3>
 
 <h4>SIPP</h4>
@@ -87,6 +95,19 @@ Both the SIPP and the SCF provide information on respondents' access to retireme
 
 <h4>SCF</h4>
 
+see [DCPLANCJ](https://www.federalreserve.gov/econres/files/bulletin.macro.txt)
+
+      Participates in a retirement plan:
+            x11032 > 0 OR      What is the balance of (your/his/her/his or her) pension account now?
+            x11132 > 0 OR
+            x11032 == -1 OR     What is the balance of (your/his/her/his or her) pension account now? (-1 = nothing; but account exists)
+            x11132 == -1 OR
+            x5316 == 1 AND x6461 == 1 OR      Payment from a current job
+            x5324 == 1 AND x6466 == 1 OR
+
+      Does not participate in a retirement plan:
+            Otherwise
+
 <h3>Employer matching is defined as follows:</h3>
 
 <h4>SIPP</h4>
@@ -96,13 +117,21 @@ Both the SIPP and the SCF provide information on respondents' access to retireme
             EECNTYN_IRA == 1 OR     Main employer or business contributed to respondent's IRA or Keogh account(s) during the reference period.
 
       Employer does not offer matching benefits: 
-      EECNTYN_401 == 2 OR      Main employer or business did not contribute to respondent's 401k, 403b, 503b, or Thrift Savings Plan account(s) during the reference period.
-      EECNTYN_IRA == 2 OR      Main employer or business did not contribute to respondent's IRA or Keogh account(s) during the reference period.
-      EOWN_THR401  == 2 OR      Did not own any 401k, 403b, 503b, or Thrift Savings Plan accounts during the reference period.
-      EOWN_IRAKEO  == 2 OR      Did not own any IRA or Keogh accounts during the reference period.
-      EOWN_PENSION == 2         Did not participate in a defined-benefit pension or cash balance plan during the reference period.
+            EECNTYN_401 == 2 OR      Main employer or business did not contribute to respondent's 401k, 403b, 503b, or Thrift Savings Plan account(s) during the reference period.
+            EECNTYN_IRA == 2 OR      Main employer or business did not contribute to respondent's IRA or Keogh account(s) during the reference period.
+            EOWN_THR401  == 2 OR      Did not own any 401k, 403b, 503b, or Thrift Savings Plan accounts during the reference period.
+            EOWN_IRAKEO  == 2 OR      Did not own any IRA or Keogh accounts during the reference period.
+            EOWN_PENSION == 2         Did not participate in a defined-benefit pension or cash balance plan during the reference period.
 
 <h4>SCF</h4>
+
+      Employer offers matching benefits:
+            x11047 == 1               Does your (employer/the business) make contributions to this plan?
+            x11147 == 1
+
+      Employer does not offer matching benefits: 
+            Otherwise
+
 
 ***
 
