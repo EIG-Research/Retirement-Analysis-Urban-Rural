@@ -103,8 +103,8 @@ scf_2022 = scf_2022_load %>%
     # Non-zero income
 
 scf_2022 = scf_2022 %>%
-  filter(IN_AGE_RANGE == "Yes") %>%
-  filter(NON_GOVT_WORKER == "Yes") %>%
+  filter(IN_AGE_RANGE == "yes") %>%
+  filter(NON_GOVT_WORKER == "non-government") %>%
   filter(FULL_PART_TIME == "full time") %>%
   filter(WAGE_SALARY > 0) %>%
   
