@@ -36,6 +36,9 @@ output_path = file.path(project_path, "Output")
 # load in cleaned SIPP data
 load(file.path(output_path, "SIPP_2023_WRANGLED.RData"))
 
+# load in list of industries that passed robustness checks
+load(file.path(output_path, "industry_robust.RData"))
+
 # list of retirement-related features
 ret_features <- c("TVAL_RET", "ANY_RETIREMENT_ACCESS", "MATCHING", "PARTICIPATING")
 
@@ -71,8 +74,8 @@ ret_sipp_2023 <- sipp_2023_metro %>%
          SHARE_PARTICIPATION = weighted_PARTICIPATING,
          SAMPLE_SIZE = n)
 
-# summmarise with respect to firm industries
-ret_sipp_industry <- sipp_2023_metro %>%
+# summmarise with respect to firm industries, keeping those that passed robust checks
+ret_sipp_industry <- sipp_2023_metro %>% filter(INDUSTRY_BROAD %in% incl) %>%
   
   # group by industries and metro/non-metro
   drop_na(METRO_STATUS, INDUSTRY_BROAD) %>% group_by(METRO_STATUS, INDUSTRY_BROAD) %>%
@@ -80,13 +83,12 @@ ret_sipp_industry <- sipp_2023_metro %>%
   # calculate the four retirement-related statistics for each industry in urban/rural
   summarise(across(unlist(lapply(ret_features, FUN = function(x){paste0("weighted_", x)})),
                    ~ sum(.x)/sum(WPFINWGT))) %>%
-
+  
   # calculate size of each industry group
   left_join(sipp_2023_metro %>% count(METRO_STATUS, INDUSTRY_BROAD)) %>%
   
-  # clean outputs by filtering out Public Administration whose sample size is too small,
   # arrange by industry, fix industry names, and rename columns
-  filter(INDUSTRY_BROAD != "Public Administration") %>% arrange(desc(INDUSTRY_BROAD)) %>%
+  arrange(desc(INDUSTRY_BROAD)) %>%
   mutate(INDUSTRY_BROAD = replace(INDUSTRY_BROAD,
                                   INDUSTRY_BROAD == "and Waste Management Services",
                                   "Waste Management Services")) %>%
@@ -96,6 +98,65 @@ ret_sipp_industry <- sipp_2023_metro %>%
          SHARE_PARTICIPATION = weighted_PARTICIPATING,
          SAMPLE_SIZE = n)
 
+account_size_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
+                                                  y = AVG_ACCOUNT_SIZE,
+                                                  fill = METRO_STATUS)) +
+  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
+  labs(title = "Average Retirement Account Size by Industry",
+       y = "Account Size (2023 Dollars)",
+       x = "Industry",
+       fill = "Metro Status") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
+
+access_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
+                                             y = SHARE_RETIREMENT_ACCESS,
+                                             fill = METRO_STATUS)) +
+  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
+  scale_y_continuous(limits = c(0,1), labels = scales::percent) +
+  labs(title = "Retirement Account Access by Industry",
+       y = "Share of Workers (%)",
+       x = "Industry",
+       fill = "Metro Status") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
+
+matching_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
+                                               y = SHARE_MATCHING,
+                                               fill = METRO_STATUS)) +
+  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
+  scale_y_continuous(limits = c(0,1), labels = scales::percent) +
+  labs(title = "Employer Matching Retirement Plans by Industry",
+       y = "Share of Employers (%)",
+       x = "Industry",
+       fill = "Metro Status") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
+
+participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
+                                                    y = SHARE_PARTICIPATION,
+                                                    fill = METRO_STATUS)) +
+  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
+  scale_y_continuous(limits = c(0,1), labels = scales::percent) +
+  labs(title = "Participation in Retirement Plans by Industry",
+       y = "Share of Workers (%)",
+       x = "Industry",
+       fill = "Metro Status") +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
+
 # save output
 setwd(output_path)
 save(ret_sipp_2023, ret_sipp_industry, file = "sipp_2023_urban-rural_retirement.RData")
+
+account_size_plot
+ggsave("account_size_plot.png")
+
+access_plot
+ggsave("retirement_access_plot.png")
+
+matching_plot
+ggsave("matching_plan_plot.png")
+
+participation_plot
+ggsave("plan_participation_plot.png")

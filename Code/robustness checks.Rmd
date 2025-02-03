@@ -52,7 +52,8 @@ library(ggplot2)
 
 # set user path
 project_directories <- list(
-  "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural"
+  "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural",
+  "jiaxinhe" = "/Users/jiaxinhe/Documents/projects/Retirement-Analysis-Urban-Rural"
 )
 
 current_user <- Sys.info()[["user"]]
@@ -215,9 +216,10 @@ confint(svymean(~ANY_RETIREMENT_ACCESS_bool, design))
 
 ```{r}
 # final list that passed robustness checks
-
 print(incl)
 
+#output the final list
+save(incl, file = file.path(output_path, "industry_robust.RData"))
 ```
 
 # 4. Robustness checks for States X Metro/non-metro
