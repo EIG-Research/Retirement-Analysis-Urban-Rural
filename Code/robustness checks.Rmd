@@ -104,17 +104,18 @@ sipp_2023 = sipp_2023 %>%
     # how many are under 30?
     count(metro_ind_access %>% filter(n<30))
     
-    # how many industries proportionally?
-    count(metro_ind_access %>% filter(n<30))/count(metro_ind_access)
     
-    # if we exclude unreliable industries, what does this leave us with?
-    metro_ind_access_n30 = metro_ind_access %>% filter(n>=30)
-    unique(metro_ind_access_n30$INDUSTRY_BROAD)
-    incl =  unique(metro_ind_access_n30$INDUSTRY_BROAD)
-
     # what do we exclude?
     metro_ind_access_nu30 = metro_ind_access %>% filter(n<30)
     unique(metro_ind_access_nu30$INDUSTRY_BROAD)
+    excl = unique(metro_ind_access_nu30$INDUSTRY_BROAD)
+    
+    # if we exclude unreliable industries, what does this leave us with?
+    metro_ind_access_n30 = metro_ind_access %>% 
+      filter(!(INDUSTRY_BROAD %in% excl))
+      
+    unique(metro_ind_access_n30$INDUSTRY_BROAD)
+    incl =  unique(metro_ind_access_n30$INDUSTRY_BROAD)
     
 ```
 
@@ -183,10 +184,6 @@ ggplot(res2, aes(x = interaction(METRO_STATUS, INDUSTRY_BROAD), y = DEff.ANY_RET
        fill = "Metro Status") +
   theme_minimal()
 
-# issue with information workers. consider dropping these.
-incl_v2 = Filter(function(x) x != "Information", incl)
-
-
 ```
 
 #### 2.d confidence intervals
@@ -219,7 +216,7 @@ confint(svymean(~ANY_RETIREMENT_ACCESS_bool, design))
 ```{r}
 # final list that passed robustness checks
 
-print(incl_v2)
+print(incl)
 
 ```
 

@@ -111,7 +111,6 @@ sipp_2023 = sipp_2023_load %>%
       TRUE ~ NA 
     ),
     
-    
     #######################
     # retirement variables
     
