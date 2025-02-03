@@ -95,7 +95,7 @@ sipp_2023 = sipp_2023_load %>%
     
     METRO_STATUS = case_when(
       TMETRO_INTV == 1 ~ "Metropolitan area",
-      TMETRO_INTV == 2 ~ "Nonmetropolitan area",
+      TMETRO_INTV == 2 ~ "Non-metropolitan area",
       TMETRO_INTV == 3 ~ "Not identified",
       TRUE ~ NA
     ),
@@ -151,8 +151,8 @@ sipp_2023 = sipp_2023_load %>%
       TRUE ~ "Missing"
     ), 
     
-    TIRAKEOVAL = case_when(is.na(TIRAKEOVAL), 0, TIRAKEOVAL),
-    TTHR401VAL = case_when(is.na(TTHR401VAL), 0, TTHR401VAL),
+    TIRAKEOVAL = ifelse(is.na(TIRAKEOVAL), 0, TIRAKEOVAL),
+    TTHR401VAL = ifelse(is.na(TTHR401VAL), 0, TTHR401VAL),
     
     RETIREMENT_ACCT_VAL = 
       TIRAKEOVAL + # Value of IRA and Keogh accounts as of the last day of the reference period.
