@@ -1,6 +1,4 @@
-
-
-# last update: 01/30/2025 by Sarah Eckhardt
+# last update: 01/31/2025 by Jason He
 
 # Project: Retirement Update 2025; Urban versus Rural
 
@@ -16,16 +14,16 @@ library(tidyr)
 library(readxl)
 
 # set user path
-      project_directories <- list(
-        "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural",
-        "jiaxinhe" = "/Users/jiaxinhe/Documents/projects/Retirement-Analysis-Urban-Rural"
-      )
+project_directories <- list(
+  "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural",
+  "jiaxinhe" = "/Users/jiaxinhe/Documents/projects/Retirement-Analysis-Urban-Rural"
+  )
 
-      current_user <- Sys.info()[["user"]]
-      if (!current_user %in% names(project_directories)) {
-        stop("Root folder for current user is not defined.")
-      }
+current_user <- Sys.info()[["user"]]
 
+if (!current_user %in% names(project_directories)) {
+  stop("Root folder for current user is not defined.")
+  }
 
 # set project paths
 project_path = project_directories[[current_user]]
@@ -95,7 +93,7 @@ sipp_2023 = sipp_2023_load %>%
     
     METRO_STATUS = case_when(
       TMETRO_INTV == 1 ~ "Metropolitan area",
-      TMETRO_INTV == 2 ~ "Non-metropolitan area",
+      TMETRO_INTV == 2 ~ "Nonmetropolitan area",
       TMETRO_INTV == 3 ~ "Not identified",
       TRUE ~ NA
     ),
@@ -151,8 +149,8 @@ sipp_2023 = sipp_2023_load %>%
       TRUE ~ "Missing"
     ), 
     
-    TIRAKEOVAL = ifelse(is.na(TIRAKEOVAL), 0, TIRAKEOVAL),
-    TTHR401VAL = ifelse(is.na(TTHR401VAL), 0, TTHR401VAL),
+    TIRAKEOVAL = case_when(is.na(TIRAKEOVAL) ~ 0, TRUE ~ TIRAKEOVAL),
+    TTHR401VAL = case_when(is.na(TTHR401VAL) ~ 0, TRUE ~ TTHR401VAL),
     
     RETIREMENT_ACCT_VAL = 
       TIRAKEOVAL + # Value of IRA and Keogh accounts as of the last day of the reference period.
@@ -168,6 +166,7 @@ sipp_2023 = sipp_2023_load %>%
          "IN_AGE_RANGE","FULL_PART_TIME", "TVAL_RET",
          "TJB1_IND",
          "RETIREMENT_ACCT_VAL",
+         "EJB1_EMPSIZE",
          "TST_INTV")
 
 
@@ -234,6 +233,7 @@ sipp_2023 = sipp_2023 %>%
          "TVAL_RET",
          "TJB1_IND",
          "RETIREMENT_ACCT_VAL",
+         "EJB1_EMPSIZE",
          "INDUSTRY_BROAD",
          "INDUSTRY_DETAILED",
          "TST_INTV")
