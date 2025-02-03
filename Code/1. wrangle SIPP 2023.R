@@ -151,6 +151,10 @@ sipp_2023 = sipp_2023_load %>%
       # is.na(EECNTYN_401) ~ "No",
       TRUE ~ "Missing"
     ), 
+    
+    TIRAKEOVAL = case_when(is.na(TIRAKEOVAL), 0, TIRAKEOVAL),
+    TTHR401VAL = case_when(is.na(TTHR401VAL), 0, TTHR401VAL),
+    
     RETIREMENT_ACCT_VAL = 
       TIRAKEOVAL + # Value of IRA and Keogh accounts as of the last day of the reference period.
       TTHR401VAL # Value of 401k, 403b, 503b, and Thrift Savings Plan accounts as of the last day of the reference period.
@@ -164,7 +168,8 @@ sipp_2023 = sipp_2023_load %>%
          "MATCHING", "MONTHCODE", "TJB1_JOBHRS1", "TOTYEARINC",
          "IN_AGE_RANGE","FULL_PART_TIME", "TVAL_RET",
          "TJB1_IND",
-         "RETIREMENT_ACCT_VAL")
+         "RETIREMENT_ACCT_VAL",
+         "TST_INTV")
 
 
 
@@ -231,8 +236,8 @@ sipp_2023 = sipp_2023 %>%
          "TJB1_IND",
          "RETIREMENT_ACCT_VAL",
          "INDUSTRY_BROAD",
-         "INDUSTRY_DETAILED"
-         )
+         "INDUSTRY_DETAILED",
+         "TST_INTV")
 
 # save file
 setwd(output_path)
