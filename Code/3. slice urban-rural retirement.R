@@ -41,15 +41,20 @@ load(file.path(output_path, "industry_robust.RData"))
 
 # list of retirement-related features
 ret_features <- c("TVAL_RET", "ANY_RETIREMENT_ACCESS", "MATCHING", "PARTICIPATING")
+ret_features_weighted <- unlist(lapply(ret_features, FUN = function(x){paste0("weighted_", x)}))
 
 # extract 2023 SIPP responses with identifiable metropolitan residency status and pre-process data
-sipp_2023_metro <- sipp_2023 %>% filter(SPANEL == 2023, METRO_STATUS != "Not identified") %>%
+sipp_2023_metro <- sipp_2023 %>% filter(METRO_STATUS != "Not identified") %>%
   
   # convert yes-no responses into binary
   mutate(across(ret_features[-1], function(feature){ifelse(feature == "No",0,1)})) %>%
   
+  # add income quintiles
+  mutate(YEAR_INC_QT = cut(TOTYEARINC, quantile(TOTYEARINC, 0:5/5), label = 1:5)) %>% drop_na(YEAR_INC_QT) %>%
+  
   # weigh variables by population weight
   mutate(across(ret_features, ~ .x * WPFINWGT, .names = "weighted_{.col}"))
+
 
 # summarise with respect to a respondent's residence in an urban or rural area
 ret_sipp_2023 <- sipp_2023_metro %>%
@@ -61,8 +66,7 @@ ret_sipp_2023 <- sipp_2023_metro %>%
   #   1. Have access to any employer retirement plan
   #   2. Work for firms offering matching retirement plans
   #   3. Participate in a retirement plan
-  summarise(across(unlist(lapply(ret_features, FUN = function(x){paste0("weighted_", x)})),
-                   ~ sum(.x)/sum(WPFINWGT))) %>%
+  summarise(across(ret_features_weighted, ~ sum(.x)/sum(WPFINWGT))) %>%
   
   # calculate size of urban / rural group
   left_join(sipp_2023_metro %>% count(METRO_STATUS), by = "METRO_STATUS") %>%
@@ -74,6 +78,7 @@ ret_sipp_2023 <- sipp_2023_metro %>%
          SHARE_PARTICIPATION = weighted_PARTICIPATING,
          SAMPLE_SIZE = n)
 
+####################
 # summmarise with respect to firm industries, keeping those that passed robust checks
 ret_sipp_industry <- sipp_2023_metro %>% filter(INDUSTRY_BROAD %in% incl) %>%
   
@@ -81,8 +86,7 @@ ret_sipp_industry <- sipp_2023_metro %>% filter(INDUSTRY_BROAD %in% incl) %>%
   drop_na(METRO_STATUS, INDUSTRY_BROAD) %>% group_by(METRO_STATUS, INDUSTRY_BROAD) %>%
   
   # calculate the four retirement-related statistics for each industry in urban/rural
-  summarise(across(unlist(lapply(ret_features, FUN = function(x){paste0("weighted_", x)})),
-                   ~ sum(.x)/sum(WPFINWGT))) %>%
+  summarise(across(ret_features_weighted, ~ sum(.x)/sum(WPFINWGT))) %>%
   
   # calculate size of each industry group
   left_join(sipp_2023_metro %>% count(METRO_STATUS, INDUSTRY_BROAD)) %>%
@@ -98,9 +102,10 @@ ret_sipp_industry <- sipp_2023_metro %>% filter(INDUSTRY_BROAD %in% incl) %>%
          SHARE_PARTICIPATION = weighted_PARTICIPATING,
          SAMPLE_SIZE = n)
 
+# Plot average account size by industry
 account_size_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
-                                                  y = AVG_ACCOUNT_SIZE,
-                                                  fill = METRO_STATUS)) +
+                                                   y = AVG_ACCOUNT_SIZE,
+                                                   fill = METRO_STATUS)) +
   geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
   labs(title = "Average Retirement Account Size by Industry",
        y = "Account Size (2023 Dollars)",
@@ -109,6 +114,7 @@ account_size_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
   theme(plot.title = element_text(hjust = 0.5),
         axis.text.x = element_text(angle=45, vjust=1, hjust=1))
 
+# Plot share of workers with retirement plan access by industry
 access_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
                                              y = SHARE_RETIREMENT_ACCESS,
                                              fill = METRO_STATUS)) +
@@ -121,6 +127,7 @@ access_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
   theme(plot.title = element_text(hjust = 0.5),
         axis.text.x = element_text(angle=45, vjust=1, hjust=1))
 
+# Plot share of employers offering matching retirement plans by industry
 matching_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
                                                y = SHARE_MATCHING,
                                                fill = METRO_STATUS)) +
@@ -133,6 +140,7 @@ matching_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
   theme(plot.title = element_text(hjust = 0.5),
         axis.text.x = element_text(angle=45, vjust=1, hjust=1))
 
+# Plot employee participation rates in retirement plans by industry
 participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
                                                     y = SHARE_PARTICIPATION,
                                                     fill = METRO_STATUS)) +
@@ -149,6 +157,7 @@ participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
 setwd(output_path)
 save(ret_sipp_2023, ret_sipp_industry, file = "sipp_2023_urban-rural_retirement.RData")
 
+# export graphs
 account_size_plot
 ggsave("account_size_plot.png")
 
@@ -160,3 +169,4 @@ ggsave("matching_plan_plot.png")
 
 participation_plot
 ggsave("plan_participation_plot.png")
+

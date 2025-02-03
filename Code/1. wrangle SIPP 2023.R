@@ -218,6 +218,9 @@ sipp_2023 = sipp_2023 %>%
            CLASS_OF_WORKER == "Employee of a private, not-for-profit company") %>%
   
   filter(FULL_PART_TIME == "full time") %>%
+  filter(ANY_RETIREMENT_ACCESS != "Missing" &
+           MATCHING != "Missing" &
+           PARTICIPATING != "Missing") %>%
   
   filter(TPTOTINC >0)   %>% # earning an income 
 
