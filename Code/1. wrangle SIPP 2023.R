@@ -149,8 +149,8 @@ sipp_2023 = sipp_2023_load %>%
       TRUE ~ "Missing"
     ), 
     
-    TIRAKEOVAL = ifelse(is.na(TIRAKEOVAL) ~ 0, TRUE ~ TIRAKEOVAL),
-    TTHR401VAL = ifelse(is.na(TTHR401VAL) ~ 0, TRUE ~ TTHR401VAL),
+    TIRAKEOVAL = ifelse(is.na(TIRAKEOVAL), 0,TIRAKEOVAL),
+    TTHR401VAL = ifelse(is.na(TTHR401VAL), 0, TTHR401VAL),
     
     RETIREMENT_ACCT_VAL = 
       TIRAKEOVAL + # Value of IRA and Keogh accounts as of the last day of the reference period.
@@ -167,7 +167,7 @@ sipp_2023 = sipp_2023_load %>%
          "TJB1_IND",
          "RETIREMENT_ACCT_VAL",
          "EJB1_EMPSIZE",
-         "TST_INTV")
+         "TST_INTV", "EJB1_EMPSIZE")
 
 
 
@@ -236,7 +236,7 @@ sipp_2023 = sipp_2023 %>%
          "EJB1_EMPSIZE",
          "INDUSTRY_BROAD",
          "INDUSTRY_DETAILED",
-         "TST_INTV")
+         "TST_INTV", "EJB1_EMPSIZE")
 
 # save file
 setwd(output_path)
