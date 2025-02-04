@@ -51,7 +51,7 @@ cps_2023_sub = cps_2023 %>%
   
   filter(CLASSWKR >=20 & CLASSWKR<24) %>% # non-government
   
-  filter(INCTOT > 0) %>% # non-zero income
+ # filter(INCTOT > 0) %>% # non-zero income
   
   mutate(METRO_STATUS = case_when(
     METRO >= 2 ~ "Metropolitan area",
@@ -62,7 +62,7 @@ cps_2023_sub = cps_2023 %>%
 
 # generate population estimates by metro / non-metro
 lab_force = cps_2023_sub %>% ungroup() %>% group_by(METRO_STATUS) %>%
-  filter(METRO_STATUS != "not identified") %>%
+#  filter(METRO_STATUS != "not identified") %>%
   
   summarise(workers = sum(ASECWT, na.rm = TRUE))
 
