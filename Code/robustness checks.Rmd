@@ -120,7 +120,34 @@ sipp_2023 = sipp_2023 %>%
     
 ```
 
-#### 2.b  sampling variability
+#### 2.b  Sample size check without urban/rural slice
+
+Since half of the industries would have too small of a sample size when divided along metro/non-metro lines, we should conduct industry-level analysis without the geographical dimension. 
+
+```{r}
+ind_access = sipp_2023 %>% filter(METRO_STATUS != "Not identified") %>% 
+  filter(!is.na(METRO_STATUS)) %>%
+  count(INDUSTRY_BROAD, ANY_RETIREMENT_ACCESS)
+
+# how many are under 30?
+count(ind_access %>% filter(n<30))
+    
+# what do we exclude?
+ind_access_nu30 = ind_access %>% filter(n<30)
+unique(ind_access_nu30$INDUSTRY_BROAD)
+excl = unique(ind_access_nu30$INDUSTRY_BROAD)
+    
+# if we exclude unreliable industries, what does this leave us with?
+ind_access_n30 = ind_access %>% 
+  filter(!(INDUSTRY_BROAD %in% excl))
+
+unique(ind_access_n30$INDUSTRY_BROAD)
+incl =  unique(ind_access_n30$INDUSTRY_BROAD)
+```
+
+We exclude public administration based on this test
+
+#### 2.c  sampling variability
 
 ```{r}
 
@@ -135,24 +162,21 @@ design <- svydesign(ids = ~0, weights = ~WPFINWGT, data = sipp_2023_excl_ind)
 svymean(~ANY_RETIREMENT_ACCESS_bool, design)
 
 # means for sub groups
-res = svyby(~ANY_RETIREMENT_ACCESS_bool, by = ~ METRO_STATUS + INDUSTRY_BROAD, design, svymean)
+res = svyby(~ANY_RETIREMENT_ACCESS_bool, by = ~ INDUSTRY_BROAD, design, svymean)
 
 # plot
 
-ggplot(res, aes(x = interaction(METRO_STATUS, INDUSTRY_BROAD), y = ANY_RETIREMENT_ACCESS_bool, fill = as.factor(METRO_STATUS))) +
+ggplot(res, aes(x = INDUSTRY_BROAD, y = ANY_RETIREMENT_ACCESS_bool)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
   geom_errorbar(aes(ymin = ANY_RETIREMENT_ACCESS_bool - se, ymax = ANY_RETIREMENT_ACCESS_bool + se), 
                 width = 0.2, position = position_dodge(0.9)) +
   labs(title = "Retirement Access with Standard Errors",
-       x = "Industry & Metro",
+       x = "Industry",
        y = "Retirement Access",
-       fill = "Metro Status",
        axis.ticks.x  = element_blank()) +
   theme_minimal()
 
-# this looks ok, and fits w/ intuition; generally metro areas should have better access.
-# SE for rural workers in information is quite high, as are point estimates. consider dropping.
-
+# this looks ok, and fits w/ intuition
 
 ```
 
@@ -172,17 +196,19 @@ ggplot(res, aes(x = interaction(METRO_STATUS, INDUSTRY_BROAD), y = ANY_RETIREMEN
 svymean(~ANY_RETIREMENT_ACCESS_bool, design, deff = TRUE)
 
 # all subgroups
-res2 = svyby(~ANY_RETIREMENT_ACCESS_bool, by = ~METRO_STATUS + INDUSTRY_BROAD, design, svymean, deff = TRUE)
+res2 = svyby(~ANY_RETIREMENT_ACCESS_bool, by = ~INDUSTRY_BROAD, design, svymean, deff = TRUE)
+
+# Exclude DEFF > 2, which is Information
+excl <- c(excl, res2 %>% filter(res2$DEff.ANY_RETIREMENT_ACCESS_bool > 2) %>%
+            .$INDUSTRY_BROAD)
+incl <- setdiff(incl, excl)
 
 # plot DEFF results
-# this looks ok; DEFF < 2 for all sub-groups
-
-ggplot(res2, aes(x = interaction(METRO_STATUS, INDUSTRY_BROAD), y = DEff.ANY_RETIREMENT_ACCESS_bool, fill = as.factor(METRO_STATUS))) +
+ggplot(res2, aes(x = INDUSTRY_BROAD, y = DEff.ANY_RETIREMENT_ACCESS_bool)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  labs(title = "Design Effect (DEFF) by Industry and Metro",
-       x = "Industry & Metro",
-       y = "Design Effect (DEFF)",
-       fill = "Metro Status") +
+  labs(title = "Design Effect (DEFF) by Industry",
+       x = "Industry",
+       y = "Design Effect (DEFF)") +
   theme_minimal()
 
 ```
@@ -198,18 +224,17 @@ res2 = res2 %>%
   )
 
 
-ggplot(res2, aes(x = interaction(METRO_STATUS, INDUSTRY_BROAD), y = ANY_RETIREMENT_ACCESS_bool, fill = as.factor(METRO_STATUS))) +
+ggplot(res2, aes(x = INDUSTRY_BROAD, y = ANY_RETIREMENT_ACCESS_bool)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
   geom_errorbar(aes(ymin = lower_CI, ymax = upper_CI), 
                 width = 0.2, position = position_dodge(0.9)) +
   labs(title = "Retirement access with 95% Confidence Intervals",
-       x = "Industry & Metro",
-       y = "Retirement access",
-       fill = "Metro Status") +
+       x = "Industry",
+       y = "Retirement access") +
   theme_minimal()
 
 
-# confidence intervals for non-metro areas's information industry allow for estimates above 100% retirement access
+# looks fine, no abnormal values
 confint(svymean(~ANY_RETIREMENT_ACCESS_bool, design))
 
 ```
@@ -222,9 +247,9 @@ print(incl)
 save(incl, file = file.path(output_path, "industry_robust.RData"))
 ```
 
-# 4. Robustness checks for States X Metro/non-metro
+# 3. Robustness checks for States X Metro/non-metro
 
-#### 2.a Sample size check
+#### 3.a Sample size check
 ```{r}
 
 # generate a crosswalk of state abbrs, state fips
@@ -278,3 +303,7 @@ length(unique(st_met_n_under30$state_abbr))
 # this is not a viable sub group.
 
 ```
+
+# 4. Robustness checks for SIPP vs SCF retirement account sizes
+
+
