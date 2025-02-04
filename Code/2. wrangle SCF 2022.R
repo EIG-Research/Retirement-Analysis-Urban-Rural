@@ -87,7 +87,8 @@ scf_2022 = scf_2022_load %>%
     
     MATCHING = case_when(
       x11047 == 1 ~ "Yes",
-      x11147 == 1 ~ "Yes"),
+      x11147 == 1 ~ "Yes",
+      TRUE ~ "No"),
     
     RETIREMENT_ACCT_VAL = # for reference person only; excl. family account vals.
       x6551 + x6552 + x6553 + # IRA accounts
