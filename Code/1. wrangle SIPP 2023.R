@@ -1,4 +1,4 @@
-# last update: 01/31/2025 by Jason He
+# last update: 02/04/2025 by Sarah Eckhardt
 
 # Project: Retirement Update 2025; Urban versus Rural
 
@@ -108,6 +108,16 @@ sipp_2023 = sipp_2023_load %>%
       TAGE >= 66 & TAGE <= 100 ~ "no",
       TRUE ~ NA 
     ),
+    EMPLOYER_SIZE = case_when(
+      EJB1_EMPSIZE == 1 ~ "< 10",
+      EJB1_EMPSIZE == 2 ~ "10 - 25",
+      EJB1_EMPSIZE == 3 ~ "26 - 50",
+      EJB1_EMPSIZE == 4  ~ "51 - 100",
+      EJB1_EMPSIZE == 5 ~ "101 - 200",
+      EJB1_EMPSIZE == 6 ~  "201 - 500",
+      EJB1_EMPSIZE == 7 ~ "501 - 1,000",
+      EJB1_EMPSIZE == 8 ~ "> 1,000"),
+    
     
     #######################
     # retirement variables
@@ -167,7 +177,7 @@ sipp_2023 = sipp_2023_load %>%
          "TJB1_IND",
          "RETIREMENT_ACCT_VAL",
          "EJB1_EMPSIZE",
-         "TST_INTV", "EJB1_EMPSIZE")
+         "TST_INTV", "EMPLOYER_SIZE")
 
 
 
@@ -239,7 +249,7 @@ sipp_2023 = sipp_2023 %>%
          "EJB1_EMPSIZE",
          "INDUSTRY_BROAD",
          "INDUSTRY_DETAILED",
-         "TST_INTV", "EJB1_EMPSIZE")
+         "TST_INTV", "EMPLOYER_SIZE")
 
 # save file
 setwd(output_path)
