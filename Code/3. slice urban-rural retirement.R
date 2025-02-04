@@ -49,13 +49,10 @@ sipp_2023_metro <- sipp_2023 %>% filter(METRO_STATUS != "Not identified") %>%
   # convert yes-no responses into binary
   mutate(across(ret_features[-1], function(feature){ifelse(feature == "No",0,1)})) %>%
   
-  # add income quintiles
-  mutate(YEAR_INC_QT = cut(TOTYEARINC, quantile(TOTYEARINC, 0:5/5), label = 1:5)) %>% drop_na(YEAR_INC_QT) %>%
-  
   # weigh variables by population weight
   mutate(across(ret_features, ~ .x * WPFINWGT, .names = "weighted_{.col}"))
 
-
+####################
 # summarise with respect to a respondent's residence in an urban or rural area
 ret_sipp_2023 <- sipp_2023_metro %>%
   
@@ -79,94 +76,50 @@ ret_sipp_2023 <- sipp_2023_metro %>%
          SAMPLE_SIZE = n)
 
 ####################
-# summmarise with respect to firm industries, keeping those that passed robust checks
-ret_sipp_industry <- sipp_2023_metro %>% filter(INDUSTRY_BROAD %in% incl) %>%
+# summarise with respect to education level
+ret_sipp_edu <- sipp_2023_metro %>%
   
-  # group by industries and metro/non-metro
-  drop_na(METRO_STATUS, INDUSTRY_BROAD) %>% group_by(METRO_STATUS, INDUSTRY_BROAD) %>%
+  # group by education levels and metro/non-metro
+  drop_na(METRO_STATUS, EDUCATION) %>% group_by(METRO_STATUS, EDUCATION) %>%
   
-  # calculate the four retirement-related statistics for each industry in urban/rural
+  # calculate the four retirement-related statistics for each education level in urban/rural
   summarise(across(ret_features_weighted, ~ sum(.x)/sum(WPFINWGT))) %>%
   
-  # calculate size of each industry group
-  left_join(sipp_2023_metro %>% count(METRO_STATUS, INDUSTRY_BROAD)) %>%
+  # calculate size of each education level
+  left_join(sipp_2023_metro %>% count(METRO_STATUS, EDUCATION)) %>%
   
-  # arrange by industry, fix industry names, and rename columns
-  arrange(desc(INDUSTRY_BROAD)) %>%
-  mutate(INDUSTRY_BROAD = replace(INDUSTRY_BROAD,
-                                  INDUSTRY_BROAD == "and Waste Management Services",
-                                  "Waste Management Services")) %>%
+  # rename variables
   rename(AVG_ACCOUNT_SIZE = weighted_TVAL_RET,
          SHARE_RETIREMENT_ACCESS = weighted_ANY_RETIREMENT_ACCESS,
          SHARE_MATCHING = weighted_MATCHING,
          SHARE_PARTICIPATION = weighted_PARTICIPATING,
-         SAMPLE_SIZE = n)
-
-# Plot average account size by industry
-account_size_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
-                                                   y = AVG_ACCOUNT_SIZE,
-                                                   fill = METRO_STATUS)) +
-  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
-  labs(title = "Average Retirement Account Size by Industry",
-       y = "Account Size (2023 Dollars)",
-       x = "Industry",
-       fill = "Metro Status") +
-  theme(plot.title = element_text(hjust = 0.5),
-        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
+         SAMPLE_SIZE = n) %>%
+  
+  # Add overall retirement statistics
+  bind_rows(ret_sipp_2023 %>% mutate(EDUCATION = "Overall")) %>%
+  
+  # arrange by education level
+  arrange(fct_relevel(EDUCATION, 'Overall', 'High School or less', 'Some college', "Bachelor's degree or higher")) %>% 
+  mutate(EDUCATION = factor(EDUCATION, levels = EDUCATION))
 
 # Plot share of workers with retirement plan access by industry
-access_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
-                                             y = SHARE_RETIREMENT_ACCESS,
-                                             fill = METRO_STATUS)) +
+access_plot_edu <- ggplot(ret_sipp_edu, aes(x = EDUCATION,
+                                            y = SHARE_RETIREMENT_ACCESS,
+                                            fill = METRO_STATUS)) +
   geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
   scale_y_continuous(limits = c(0,1), labels = scales::percent) +
-  labs(title = "Retirement Account Access by Industry",
+  labs(title = "Retirement Account Access by Education Level",
        y = "Share of Workers (%)",
-       x = "Industry",
-       fill = "Metro Status") +
-  theme(plot.title = element_text(hjust = 0.5),
-        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
-
-# Plot share of employers offering matching retirement plans by industry
-matching_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
-                                               y = SHARE_MATCHING,
-                                               fill = METRO_STATUS)) +
-  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
-  scale_y_continuous(limits = c(0,1), labels = scales::percent) +
-  labs(title = "Employer Matching Retirement Plans by Industry",
-       y = "Share of Employers (%)",
-       x = "Industry",
-       fill = "Metro Status") +
-  theme(plot.title = element_text(hjust = 0.5),
-        axis.text.x = element_text(angle=45, vjust=1, hjust=1))
-
-# Plot employee participation rates in retirement plans by industry
-participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
-                                                    y = SHARE_PARTICIPATION,
-                                                    fill = METRO_STATUS)) +
-  geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75) +
-  scale_y_continuous(limits = c(0,1), labels = scales::percent) +
-  labs(title = "Participation in Retirement Plans by Industry",
-       y = "Share of Workers (%)",
-       x = "Industry",
+       x = "Education Level",
        fill = "Metro Status") +
   theme(plot.title = element_text(hjust = 0.5),
         axis.text.x = element_text(angle=45, vjust=1, hjust=1))
 
 # save output
 setwd(output_path)
-save(ret_sipp_2023, ret_sipp_industry, file = "sipp_2023_urban-rural_retirement.RData")
+write.csv(ret_sipp_2023, "urban_rural_retirement.csv", row.names = FALSE)
+write.csv(ret_sipp_edu, "urban_rural_ret_education.csv", row.names = FALSE)
 
 # export graphs
-account_size_plot
-ggsave("account_size_plot.png")
-
-access_plot
-ggsave("retirement_access_plot.png")
-
-matching_plot
-ggsave("matching_plan_plot.png")
-
-participation_plot
-ggsave("plan_participation_plot.png")
-
+access_plot_edu
+ggsave("education_level_plot.png")
