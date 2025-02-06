@@ -129,3 +129,35 @@ load(paste(output_path, "SIPP_2023_WRANGLED.RData", sep="/"))
       access
       participation
       matching
+
+      
+  # read in topline table and export labor force size.
+  
+  table1 = read.csv(paste(output_path, "urban_rural_retirement.csv",sep="/")) %>%
+    left_join(lab_force) %>%
+    
+    mutate(SHARE_RETIREMENT_ACCESS =SHARE_RETIREMENT_ACCESS*100,
+           SHARE_PARTICIPATION = SHARE_PARTICIPATION*100,
+           SHARE_MATCHING = SHARE_MATCHING*100) %>%
+    
+    rename(`Residential status` = METRO_STATUS,
+           `Average retirement account size` = AVG_ACCOUNT_SIZE,
+           `Lacks access to employer-based retirement plan (%)` = SHARE_RETIREMENT_ACCESS,
+           `Does not participate in employer-based retirement plan (%)` = SHARE_PARTICIPATION,
+           `Does not receive matching benefits (%)` = SHARE_MATCHING,
+           `Sample size` = SAMPLE_SIZE,
+           `Labor force` = workers) 
+  
+  table1 = table1 %>%
+    pivot_longer(cols = names(table1[2:7])) %>%
+    pivot_wider(names_from = `Residential status`,
+                values_from = value)
+  
+  table1
+  names(table1)
+  
+  setwd(output_path)
+  write.csv(table1, "topline_table.csv")    
+
+
+
