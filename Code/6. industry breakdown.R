@@ -65,7 +65,7 @@ ret_sipp_industry <- sipp_2023_metro %>% filter(INDUSTRY_BROAD %in% incl) %>%
   left_join(sipp_2023_metro %>% count(INDUSTRY_BROAD)) %>%
   
   # arrange by industry, fix industry names, and rename columns
-  arrange(desc(INDUSTRY_BROAD)) %>%
+  arrange(weighted_ANY_RETIREMENT_ACCESS) %>%
   mutate(INDUSTRY_BROAD = replace(INDUSTRY_BROAD,
                                   INDUSTRY_BROAD == "and Waste Management Services",
                                   "Waste Management Services")) %>%
@@ -111,7 +111,7 @@ participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
 
 # save output
 setwd(output_path)
-write.csv(ret_sipp_industry, "urban_rural_ret_education.csv", row.names = FALSE)
+write.csv(ret_sipp_industry, "urban_rural_ret_industry.csv", row.names = FALSE)
 
 # export graphs
 access_plot
@@ -122,3 +122,4 @@ ggsave("matching_plan_plot.png")
 
 participation_plot
 ggsave("plan_participation_plot.png")
+
