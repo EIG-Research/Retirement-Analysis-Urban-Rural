@@ -49,7 +49,6 @@ library(survey)
 library(batman)
 library(ggplot2)
 
-
 # set user path
 project_directories <- list(
   "sarah" = "/Users/sarah/Documents/GitHub/Retirement-Analysis-Urban-Rural",
@@ -294,8 +293,9 @@ sipp_2023 %>%
 # how many states does this impact?
 st_met_n_under30 = sipp_2023 %>%
   count(state_abbr, METRO_STATUS) %>%
-    filter(!is.na(METRO_STATUS)) %>% filter(METRO_STATUS != "Not identified") %>%
-    filter(n<30)
+  filter(!is.na(METRO_STATUS)) %>%
+  filter(METRO_STATUS != "Not identified") %>%
+  filter(n<30)
 
 length(unique(st_met_n_under30$state_abbr))
 
@@ -306,4 +306,37 @@ length(unique(st_met_n_under30$state_abbr))
 
 # 4. Robustness checks for SIPP vs SCF retirement account sizes
 
+```{r}
+# Read in wrangled SCF data (see 1. wrangle SCF 2022.R)
+load(paste(output_path, "SCF_2022_WRANGLED.RData", sep = "/"))
+
+# calculated weighted average retirement account sizes for SCF and SIPP
+avg_ret <- scf_2022 %>%
+  mutate(across(RETIREMENT_ACCT_VAL, ~.x * WGT, .names="weighted_{.col}")) %>%
+  summarise(across(weighted_RETIREMENT_ACCT_VAL, ~ sum(.x)/sum(WGT))) %>%
+  rename(SCF_AVG_RETIREMENT_ACCOUNT = weighted_RETIREMENT_ACCT_VAL) %>%
+  mutate(
+    SIPP_AVG_RETIREMENT_ACCOUNT = sipp_2023 %>%
+      mutate(across(TVAL_RET, ~.x * WPFINWGT, .names = "weighted_{.col}")) %>%
+      summarise(across(weighted_TVAL_RET, ~sum(.x)/sum(WPFINWGT))) %>%
+      .$weighted_TVAL_RET
+  )
+
+avg_ret # SIPP reports nearly $10,000 more retirment savings on average than SCF, not counting the inflation from SIPP's 2021 dollars to SCF's 2022 dollars
+
+# two-sided t-test for weight-normalized account values
+weighted_scf_ret <- scf_2022 %>%
+  mutate(across(RETIREMENT_ACCT_VAL,~.x*WGT,.names="weighted_{.col}")) %>%
+  mutate(across(weighted_RETIREMENT_ACCT_VAL, ~.x/sum(WGT))) %>%
+  select("weighted_RETIREMENT_ACCT_VAL")
+
+weighted_sipp_ret <- sipp_2023 %>%
+  mutate(across(TVAL_RET,~.x*WPFINWGT,.names="weighted_{.col}")) %>%
+  mutate(across(weighted_TVAL_RET, ~.x/sum(WPFINWGT))) %>%
+  select("weighted_TVAL_RET")
+
+t.test(weighted_scf_ret, weighted_sipp_ret)
+
+# the p-value is close to 0 and the 95% CI is [-5.23,-3.21], hence SIPP has larger mean account size than SCF
+```
 
