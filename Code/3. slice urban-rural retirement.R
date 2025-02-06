@@ -36,9 +36,6 @@ output_path = file.path(project_path, "Output")
 # load in cleaned SIPP data
 load(file.path(output_path, "SIPP_2023_WRANGLED.RData"))
 
-# load in list of industries that passed robustness checks
-load(file.path(output_path, "industry_robust.RData"))
-
 # list of retirement-related features
 ret_features <- c("TVAL_RET", "ANY_RETIREMENT_ACCESS", "MATCHING", "PARTICIPATING")
 ret_features_weighted <- unlist(lapply(ret_features, FUN = function(x){paste0("weighted_", x)}))
@@ -74,6 +71,10 @@ ret_sipp_2023 <- sipp_2023_metro %>%
          SHARE_MATCHING = weighted_MATCHING,
          SHARE_PARTICIPATION = weighted_PARTICIPATING,
          SAMPLE_SIZE = n)
+
+# Change retirement access, matching, and participation to percent without
+ret_sipp_2023 <- ret_sipp_2023 %>%
+  mutate(across(c("SHARE_RETIREMENT_ACCESS", "SHARE_MATCHING", "SHARE_PARTICIPATION"), ~1-.x))
 
 ####################
 # summarise with respect to education level
@@ -117,8 +118,8 @@ access_plot_edu <- ggplot(ret_sipp_edu, aes(x = EDUCATION,
 
 # save output
 setwd(output_path)
-write.csv(ret_sipp_2023, "urban_rural_retirement.csv", row.names = FALSE)
-write.csv(ret_sipp_edu, "urban_rural_ret_education.csv", row.names = FALSE)
+write.csv(ret_sipp_2023[,-2], "urban_rural_retirement.csv", row.names = FALSE)
+write.csv(ret_sipp_edu[,-3], "urban_rural_ret_education.csv", row.names = FALSE)
 
 # export graphs
 access_plot_edu

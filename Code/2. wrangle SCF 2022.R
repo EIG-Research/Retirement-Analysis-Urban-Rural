@@ -42,7 +42,7 @@ setwd(scf_path)
 
 
 scf_2022_load = read_dta("p22i6.dta")
-
+scf_2022_load$x7402
 
 scf_2022 = scf_2022_load %>%
   
@@ -50,16 +50,25 @@ scf_2022 = scf_2022_load %>%
   # see code book: https://www.federalreserve.gov/econres/files/bulletin.macro.txt
   rename(AGE = x14,
          WGT = x42001, # Revised Kennickell-Woodburn consistent weight
-        INDUSTRY = x7402,
         WAGE_SALARY = x4112) %>% # for respondent only.
   
-  mutate(FULL_PART_TIME = case_when(
+  mutate(INDUSTRY = case_when(
+      x7402 == 0 ~ "Unemployed and No Spouse",
+      x7402 == 1 ~ "Agriculture, Forestry, Fishing, Hunting, Veterinary, and Landscaping",
+      x7402 == 2 ~ "Mining and Construction",
+      x7402 == 3 ~ "Manufacturing",
+      x7402 == 4 ~ "Wholesale & Retail Trade and Food & Beverage",
+      x7402 == 5 ~ "Information, Finance, and Maintenance",
+      x7402 == 6 ~ "Utilities, Entertainment Media, and Social Services",
+      TRUE ~ NA
+    ),
+    FULL_PART_TIME = case_when(
     x4511 == 1 ~ "full time",
     x4511 == 2 ~ "part time",
     TRUE ~ NA),
     
     NON_GOVT_WORKER = case_when(
-      INDUSTRY < 9370 ~ "non-government",
+      x7402 < 7 ~ "non-government", # Industry code has been collapsed in public-facing SCF
       TRUE ~ "government or out of universe"
     ),
     
