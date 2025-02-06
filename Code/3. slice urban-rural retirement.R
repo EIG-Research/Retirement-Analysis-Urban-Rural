@@ -118,8 +118,8 @@ access_plot_edu <- ggplot(ret_sipp_edu, aes(x = EDUCATION,
 
 # save output
 setwd(output_path)
-write.csv(ret_sipp_2023[,-2], "urban_rural_retirement.csv", row.names = FALSE)
-write.csv(ret_sipp_edu[,-3], "urban_rural_ret_education.csv", row.names = FALSE)
+write.csv(ret_sipp_2023, "urban_rural_retirement.csv", row.names = FALSE)
+write.csv(ret_sipp_edu, "urban_rural_ret_education.csv", row.names = FALSE)
 
 # export graphs
 access_plot_edu

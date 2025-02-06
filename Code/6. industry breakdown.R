@@ -111,7 +111,7 @@ participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
 
 # save output
 setwd(output_path)
-write.csv(ret_sipp_industry[,-2], "urban_rural_ret_education.csv", row.names = FALSE)
+write.csv(ret_sipp_industry, "urban_rural_ret_education.csv", row.names = FALSE)
 
 # export graphs
 access_plot
