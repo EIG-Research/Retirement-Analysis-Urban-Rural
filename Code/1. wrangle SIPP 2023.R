@@ -10,6 +10,7 @@ rm(list = ls())
 
 # load packages
 library(dplyr)
+
 library(tidyr)
 library(readxl)
 
@@ -177,7 +178,7 @@ sipp_2023 = sipp_2023_load %>%
          "TJB1_IND",
          "RETIREMENT_ACCT_VAL",
          "EJB1_EMPSIZE",
-         "TST_INTV", "EMPLOYER_SIZE")
+         "TST_INTV", "EMPLOYER_SIZE", "EEDUC", "EJB1_EMPSIZE")
 
 
 
@@ -249,7 +250,7 @@ sipp_2023 = sipp_2023 %>%
          "EJB1_EMPSIZE",
          "INDUSTRY_BROAD",
          "INDUSTRY_DETAILED",
-         "TST_INTV", "EMPLOYER_SIZE")
+         "TST_INTV", "EMPLOYER_SIZE", "EEDUC", "EJB1_EMPSIZE")
 
 # save file
 setwd(output_path)
