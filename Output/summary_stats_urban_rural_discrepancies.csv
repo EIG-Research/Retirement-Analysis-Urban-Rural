@@ -1,3 +1,3 @@
-"","METRO_STATUS","Median income","% with HS or less","Mean age*","% in a low-access industry","% at a company with >1,000 employees","top_decile","bottom_decile"
-"1","Metropolitan area",63360,29.244566061956,42.7099001175088,17.9483963860571,15.7646631637952,0.105652534536814,0.0915406347328601
-"2","Non-metropolitan area",49536,49.2829992253251,43.0979335130279,21.3076562865412,7.25189800734989,0.0333794700389912,0.121064430889906
+"","METRO_STATUS","Median income","top_income_decile","bottom_income_decile","% with HS or less","Mean age*","% in a low-access industry","% at a company with >1,000 employees"
+"1","Metropolitan area",63360,0.105652534536814,0.0915406347328601,29.244566061956,42.7099001175088,17.9483963860571,15.7646631637952
+"2","Non-metropolitan area",49536,0.0333794700389912,0.121064430889906,49.2829992253251,43.0979335130279,21.3076562865412,7.25189800734989

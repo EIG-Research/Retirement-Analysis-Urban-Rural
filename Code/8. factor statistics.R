@@ -276,8 +276,8 @@ load("SIPP_2023_WRANGLED.RData")
         mutate(across(TVAL_RET, ~ .x * WPFINWGT, .names = "weighted_{.col}")) %>%
         mutate(YEAR_INC_QT = cut(TOTYEARINC, quantile(TOTYEARINC, 0:10/10), label = 1:10)) %>%
         drop_na(YEAR_INC_QT) %>%
-        mutate(top_decile = as.numeric(YEAR_INC_QT == 10) * WPFINWGT,
-               bottom_decile = as.numeric(YEAR_INC_QT == 1) * WPFINWGT)
+        mutate(top_income_decile = as.numeric(YEAR_INC_QT == 10) * WPFINWGT,
+               bottom_income_decile = as.numeric(YEAR_INC_QT == 1) * WPFINWGT)
       
       income_decile_summary <- income_decile %>%
         group_by(YEAR_INC_QT) %>%
@@ -285,14 +285,14 @@ load("SIPP_2023_WRANGLED.RData")
       
       income_decile_rural_urban <- income_decile %>%
         group_by(METRO_STATUS) %>%
-        summarise(across(c(top_decile, bottom_decile), ~ sum(.x)/sum(WPFINWGT)))
+        summarise(across(c(top_income_decile, bottom_income_decile), ~ sum(.x)/sum(WPFINWGT)))
 
    stats = median_income %>%
+     left_join(income_decile_rural_urban) %>%
      left_join(edu) %>%
      left_join(age) %>%
      left_join(low_access) %>%
-     left_join(large_employer) %>%
-     left_join(income_decile_rural_urban)
+     left_join(large_employer)
 
    setwd(output_path)
     write.csv(stats, "summary_stats_urban_rural_discrepancies.csv")
