@@ -134,9 +134,14 @@ see [DCPLANCJ](https://www.federalreserve.gov/econres/files/bulletin.macro.txt)
 
 
 ***
+<h2>Random Forest</h2>
 
-<h2>Data Quality Concerns</h2>
+We select the random forest as our non-parametric estimator for the following reasons:
+1. Random forests do well with combining categorical and numerical data types; our model has both.
+2. It handles non-lineary relationships; and like all non-parametric estimators makes minimnal assumptions about the underlying distribution.
+3. Random forests are robust, being built on n-many decision trees, which makes it well-equiped to manage noisy data, and high-variance trees. This is particularly useful for the SIPP, which is noisy.
+4. It allows for comparisons between feature importance
 
-(robustness checks....)
+Our random forest models are built on 500 decision trees. Additionally, to construct a confidence interval for the random forest's performance we run each random forest 100 times, which gives a mean and standard deviation of outcome estimates.
 
 
