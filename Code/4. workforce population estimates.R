@@ -131,7 +131,8 @@ load(paste(output_path, "SIPP_2023_WRANGLED.RData", sep="/"))
       matching
 
       
-  # read in topline table and export labor force size.
+  # read in topline table and add in labor force size.
+  # constructed in "3. slice urban-rural retirement.R
   
   table1 = read.csv(paste(output_path, "urban_rural_retirement.csv",sep="/")) %>%
     left_join(lab_force) %>%
@@ -147,7 +148,8 @@ load(paste(output_path, "SIPP_2023_WRANGLED.RData", sep="/"))
            `Does not receive matching benefits (%)` = SHARE_MATCHING,
            `Sample size` = SAMPLE_SIZE,
            `Labor force` = workers) 
-  
+
+  # prepare for datawrapper export
   table1 = table1 %>%
     pivot_longer(cols = names(table1[2:7])) %>%
     pivot_wider(names_from = `Residential status`,
