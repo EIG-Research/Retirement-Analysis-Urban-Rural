@@ -150,8 +150,6 @@ We select the random forest as our non-parametric estimator for the following re
 1. Random forests do well with combining categorical and numerical data types; our model has both.
 2. It handles non-lineary relationships; and like all non-parametric estimators makes minimnal assumptions about the underlying distribution.
 3. Random forests are robust, being built on n-many decision trees, which makes it well-equiped to manage noisy data, and high-variance trees. This is particularly useful for the SIPP, which is noisy.
-4. It allows for comparisons between feature importance
+4. It allows for constructing probability predictions of dependent variables based on different input values of independent variables.
 
-Our random forest models are built on 500 decision trees. Additionally, to construct a confidence interval for the random forest's performance we run each random forest 100 times, which gives a mean and standard deviation of outcome estimates.
-
-
+Our random forest models consist of 500 decision trees. After estimating the model using SIPP data, we use it to predict the probabilities that a set of agents with different attributes will have access to an employer-based retirement plan. We start with a representative agent with median age, education, income, and employer size, living in a metropolitan area and working in the largest industry group. We perturb each variable by changing its value to its minimum and maximum and report how much the predicted probability changes as a result. The process is repeated 100 times and averaged to obtain more precise predictions.

@@ -262,9 +262,9 @@ set.seed(42)  # For reproducibility
 # generate prediction matrix for different characteristics
 
 # find the representative agent within the data set
-rep_agent <- train_data %>% select(age, education, income, employer_size) %>%
+rep_agent <- sipp_2023_subset %>% select(age, education, income, employer_size) %>%
   summarise_all(., median) %>%
-  mutate(industry = train_data %>% count(industry) %>% filter(n == max(n)) %>% .$industry %>% as.character(),
+  mutate(industry = sipp_2023_subset %>% count(industry) %>% filter(n == max(n)) %>% .$industry %>% as.character(),
          metro_status = 1)
 rep_agent
 
@@ -282,14 +282,14 @@ minmax.industries <- c(access_ranked_industries %>% filter(SHARE_RETIREMENT_ACCE
 # access; then duplicate the predictions for rural
 permute_agents <- bind_rows(
   rep_agent %>% mutate(age = replace(age, 1, list(c(rep_agent$age, (18+30)/2, (55+65)/2)))) %>% unnest_longer(age),
-  rep_agent %>% mutate(education = replace(education, 1, list(c(train_data %>% select(education) %>% min(),
-                                                                train_data %>% select(education) %>% max())))) %>%
+  rep_agent %>% mutate(education = replace(education, 1, list(c(sipp_2023_subset %>% select(education) %>% min(),
+                                                                sipp_2023_subset %>% select(education) %>% max())))) %>%
     unnest_longer(education),
-  rep_agent %>% mutate(employer_size = replace(employer_size, 1, list(c(train_data %>% select(employer_size) %>% min(),
-                                                                        train_data %>% select(employer_size) %>% max())))) %>%
+  rep_agent %>% mutate(employer_size = replace(employer_size, 1, list(c(sipp_2023_subset %>% select(employer_size) %>% min(),
+                                                                        sipp_2023_subset %>% select(employer_size) %>% max())))) %>%
     unnest_longer(employer_size),
-  rep_agent %>% mutate(income = replace(income, 1, list(c(median(train_data %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
-                                 median(train_data %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
+  rep_agent %>% mutate(income = replace(income, 1, list(c(median(sipp_2023_subset %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
+                                 median(sipp_2023_subset %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
     unnest_longer(income),
   rep_agent %>% mutate(industry = replace(industry, 1, list(minmax.industries))) %>%
     unnest_longer(industry)
@@ -318,8 +318,8 @@ set.seed(42) # for reproducibility
 
 # convert probability array to matrix 
 prob.array <- bootstrap_prediction(model_formula = access ~ age + industry + income + education + metro_status + employer_size,
-                                   model_data = train_data,
-                                   model_weights = train_data$WPFINWGT,
+                                   model_data = sipp_2023_subset,
+                                   model_weights = sipp_2023_subset$WPFINWGT,
                                    predict_data = permute_agents)
 prob.matrix <- (as.data.frame(split(as.numeric(prob.array[1,]), 1:2)) %>%
                   rename(urban = X1, rural = X2) - prob.array[1,1]) %>%
