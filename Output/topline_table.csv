@@ -1,3 +1,7 @@
-"","Residential status","Average retirement account size","Lacks access to employer-based retirement plan (%)","Does not receive matching benefits (%)","Does not participate in employer-based retirement plan (%)","Sample size","Labor force"
-"1","Metropolitan area",113751.729106951,40.7415272493439,49.5093490822959,42.8205338035143,6808,87333885.3
-"2","Non-metropolitan area",59160.0188809218,50.4034512759819,56.6362024172585,52.1745208956715,1113,10381767.86
+"","name","Metropolitan area","Non-metropolitan area"
+"1","Average retirement account size",113751.729106951,59160.0188809218
+"2","Lacks access to employer-based retirement plan (%)",40.7415272493439,50.4034512759819
+"3","Does not receive matching benefits (%)",49.5093490822959,56.6362024172585
+"4","Does not participate in employer-based retirement plan (%)",42.8205338035143,52.1745208956715
+"5","Sample size",6808,1113
+"6","Labor force",87333885.3,10381767.86

@@ -1,5 +1,5 @@
 
-# last update: 02/06/2025 by Sarah Eckhardt
+# last update: 02/10/2025 by Jason He
 
 # Project: Retirement Update 2025; Urban versus Rural
 
@@ -33,6 +33,7 @@ library(readxl)
 library(ranger)
 library(ggplot2)
 library(tibble)
+library(scales)
 
 # set user path
 project_directories <- list(
@@ -92,19 +93,27 @@ sipp_2023_subset = sipp_2023 %>%
 
   
   # categorical conversions (ordered and non-ordered)
-    # industry is not ordered
-    # education and employer size are
+    # industry is not ordered, employer size is
           
-          education = factor(EEDUC, ordered = TRUE),
+          education = case_when(
+            EDUCATION == "High School or less" ~ 1,
+            EDUCATION == "Some college" ~ 2,
+            EDUCATION == "Bachelor's degree or higher" ~ 3,
+            EDUCATION == "Missing" ~ NA
+          ),
+  
           industry = factor(INDUSTRY_BROAD, ordered = FALSE),
           
-          employer_size = factor(EJB1_EMPSIZE, ordered = TRUE),
+          employer_size = EJB1_EMPSIZE,
           
           metro_status = factor(case_when(
             METRO_STATUS == "Metropolitan area" ~ 1,
             METRO_STATUS == "Non-metropolitan area" ~ 0,
             TRUE ~ NA
-          ), ordered = TRUE)) %>%
+          ), ordered = TRUE),
+  
+          YEAR_INC_QT = as.numeric(cut(TOTYEARINC, quantile(TOTYEARINC, 0:10/10), label = 1:10))
+          ) %>%
 
   
   # select desired vars
@@ -114,7 +123,7 @@ sipp_2023_subset = sipp_2023 %>%
          access, matching, participates, account_value,
          
          # regressors
-         age, education, income, industry, metro_status, employer_size
+         age, education, income, industry, metro_status, employer_size, YEAR_INC_QT,
          ) %>% 
   
   na.omit()
@@ -249,6 +258,75 @@ set.seed(42)  # For reproducibility
 # consider adding R^2 values.      
 # r2_value <- 1 - (sum((test_data$account_value - predict)^2) / sum((test_data$account_value - mean(test_data$account_value))^2))
 
+###########################################################
+# generate prediction matrix for different characteristics
+
+# find the representative agent within the data set
+rep_agent <- sipp_2023_subset %>% select(age, education, income, employer_size) %>%
+  summarise_all(., median) %>%
+  mutate(industry = sipp_2023_subset %>% count(industry) %>% filter(n == max(n)) %>% .$industry %>% as.character(),
+         metro_status = 1)
+rep_agent
+
+# the representative respondent to SIPP is 42-year-old (median age), has some college education (median education),
+# earns the median income of the data set, works for a company with 51 to 100 employees in the Educational Services,
+# and Health Care and Social Assistance industry, and resides in a metro area. Think of a middle-class, middle-aged
+# healthcare professional holding a nursing or technician degree and working for a small urban hospital.
+
+# extract the industries with the best and worst access
+access_ranked_industries <- read.csv(file.path(output_path, "retirement_by_industry.csv"))
+minmax.industries <- c(access_ranked_industries %>% filter(SHARE_RETIREMENT_ACCESS == min(SHARE_RETIREMENT_ACCESS)) %>% .$INDUSTRY_BROAD,
+  access_ranked_industries %>% filter(SHARE_RETIREMENT_ACCESS == max(SHARE_RETIREMENT_ACCESS)) %>% .$INDUSTRY_BROAD)
+      
+# permute by minimum and maximum values of age, education, employer size, income, and industry by retirement
+# access; then duplicate the predictions for rural
+permute_agents <- bind_rows(
+  rep_agent %>% mutate(age = replace(age, 1, list(c(rep_agent$age, (18+30)/2, (55+65)/2)))) %>% unnest_longer(age),
+  rep_agent %>% mutate(education = replace(education, 1, list(c(sipp_2023_subset %>% select(education) %>% min(),
+                                                                sipp_2023_subset %>% select(education) %>% max())))) %>%
+    unnest_longer(education),
+  rep_agent %>% mutate(employer_size = replace(employer_size, 1, list(c(sipp_2023_subset %>% select(employer_size) %>% min(),
+                                                                        sipp_2023_subset %>% select(employer_size) %>% max())))) %>%
+    unnest_longer(employer_size),
+  rep_agent %>% mutate(income = replace(income, 1, list(c(median(sipp_2023_subset %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
+                                 median(sipp_2023_subset %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
+    unnest_longer(income),
+  rep_agent %>% mutate(industry = replace(industry, 1, list(minmax.industries))) %>%
+    unnest_longer(industry)
+) %>% mutate(metro_status = replace(metro_status, which(metro_status == 1),
+                                    list(c(1, 0)))) %>% unnest_longer(metro_status)
+
+# run random forest model 100 times to generate average prediction
+bootstrap_prediction <- function(model_formula, model_data, model_weights,
+                                 predict_data, num_repeats = 100, num_trees = 500){
+  results <- data.frame(matrix(ncol = nrow(predict_data), nrow = 0))
+  for(i in 1:num_repeats){
+    rf <- ranger(model_formula, data = model_data, 
+                 num.trees = num_trees, 
+                 case.weights = model_weights,
+                 classification = FALSE,
+                 write.forest = TRUE,
+                 importance = 'permutation',
+                 respect.unordered.factors = TRUE,
+                 scale.permutation.importance = TRUE)
+    results <- rbind(results, predict(rf, data = predict_data)$predictions)
+  }
+  results %>% summarise_all(., mean)
+}
+
+set.seed(42) # for reproducibility
+
+# convert probability array to matrix 
+prob.array <- bootstrap_prediction(model_formula = access ~ age + industry + income + education + metro_status + employer_size,
+                                   model_data = sipp_2023_subset,
+                                   model_weights = sipp_2023_subset$WPFINWGT,
+                                   predict_data = permute_agents)
+prob.matrix <- (as.data.frame(split(as.numeric(prob.array[1,]), 1:2)) %>%
+                  rename(urban = X1, rural = X2) - prob.array[1,1]) %>%
+  mutate(urban = percent(urban + (urban == 0)*prob.array[1,1], accuracy = 0.01), rural = percent(rural, , accuracy = 0.01)) %>%
+  mutate(labels = c("representative agent", "age 24", "age 60", "high school or less", "bachelors or above",
+                    "<= 10 workers", ">= 1000 workers", "lowest income decile", "highest income decile",
+                    "worst access industry", "best access industry")) %>% relocate(labels)
 
 ############################################
 # export bootstrapped random forest results
@@ -259,7 +337,7 @@ setwd(output_path)
     write.csv(matching_results, "rf_matching.csv")
     write.csv(participation_results, "rf_participation.csv")
     write.csv(account_value_results, "rf_account_value.csv")
-
+    write.csv(prob.matrix, "rf_prediction_matrix.csv")
     
   # combine results for datawrapper display.
       access_datawr = access_results %>% select(variable, importance_scaled) %>%

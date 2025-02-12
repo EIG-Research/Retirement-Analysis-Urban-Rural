@@ -12,15 +12,21 @@ All links are current at the time of publication. Contact Sarah Eckhardt with an
 
       SIPP is a nationally representative longitudinal survey that provides information on the dynamics of income, employment, household composition, and government program participation. As the survey interviews individuals for several years over monthly surveys, it provides information about changes in household composition and economic circumstances over time.
 
-      We rely on the 2023 SIPP survey for the majority of the analysis in this piece. Historical survey versions are used for generational cuts.
+      We rely on the 2023 SIPP survey for the analysis in this piece. Historical survey versions are used for generational cuts.
 
 2. Survey of Consumer Finances (SCF): available for download from the Federal Reserve [here](https://www.federalreserve.gov/econres/scfindex.htm)
 
       SCF is a triennial cross-sectional survey of U.S. families. The survey data include information on families’ balance sheets, pensions, income, and demographic characteristics.
 
-      We rely on the 2022 SCF survey for the majority of the analysis in this piece.
+      We rely on the 2022 SCF survey for the analysis in this piece.
 
 3. Census 2017 Industry Codes: available for download from the Census [here](https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2017-industry-code-list-with-crosswalk.xlsx)
+
+4. Census Current Population Survey (CPS) downloaded from IPUMS [here](https://cps.ipums.org/cps/)
+
+   CPS is a monthly survey covering a wealth of information about the socioeconomic state of the United States.
+
+   We rely on the 2023 sample for the analysis in this piece.
 
 ****
 
@@ -28,6 +34,10 @@ All links are current at the time of publication. Contact Sarah Eckhardt with an
 <h2>Methodology</h2>
 
 The universe covers 18-65 year old non-government employees, working full time (35 or more hours a week), and earning a non-zero income.
+
+<h3>Workforce population estimates</h3>
+
+The CPS is a more reliable estimator of the U.S. population and labor force. For this reason we use the CPS's estimates of the 18-65 year old, non-goverment full-time laborforce, by metro and non-metro status. These estimates are applied to the SIPP's retirement plan access, participation, and employer matching estimates to obtain the total number of workers who are left out.
 
 <h3>Universe Definitions:</h3>
 
@@ -134,9 +144,12 @@ see [DCPLANCJ](https://www.federalreserve.gov/econres/files/bulletin.macro.txt)
 
 
 ***
+<h2>Random Forest</h2>
 
-<h2>Data Quality Concerns</h2>
+We select the random forest as our non-parametric estimator for the following reasons:
+1. Random forests do well with combining categorical and numerical data types; our model has both.
+2. It handles non-lineary relationships; and like all non-parametric estimators makes minimnal assumptions about the underlying distribution.
+3. Random forests are robust, being built on n-many decision trees, which makes it well-equiped to manage noisy data, and high-variance trees. This is particularly useful for the SIPP, which is noisy.
+4. It allows for constructing probability predictions of dependent variables based on different input values of independent variables.
 
-(robustness checks....)
-
-
+Our random forest models consist of 500 decision trees. After estimating the model using SIPP data, we use it to predict the probabilities that a set of agents with different attributes will have access to an employer-based retirement plan. We start with a representative agent with median age, education, income, and employer size, living in a metropolitan area and working in the largest industry group. We perturb each variable by changing its value to its minimum and maximum and report how much the predicted probability changes as a result. The process is repeated 100 times and averaged to obtain more precise predictions.

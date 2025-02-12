@@ -108,18 +108,10 @@ participation_plot <- ggplot(ret_sipp_industry, aes(x = INDUSTRY_BROAD,
   theme(plot.title = element_text(hjust = 0.5),
         axis.text.x = element_text(angle=45, vjust=1, hjust=1))
 
+access_plot
+matching_plot
+participation_plot
 
 # save output
 setwd(output_path)
-write.csv(ret_sipp_industry, "urban_rural_ret_industry.csv", row.names = FALSE)
-
-# export graphs
-access_plot
-ggsave("retirement_access_plot.png")
-
-matching_plot
-ggsave("matching_plan_plot.png")
-
-participation_plot
-ggsave("plan_participation_plot.png")
-
+write.csv(ret_sipp_industry, "retirement_by_industry.csv", row.names = FALSE)

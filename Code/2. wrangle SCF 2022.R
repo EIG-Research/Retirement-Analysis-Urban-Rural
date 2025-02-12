@@ -42,7 +42,6 @@ setwd(scf_path)
 
 
 scf_2022_load = read_dta("p22i6.dta")
-scf_2022_load$x7402
 
 scf_2022 = scf_2022_load %>%
   
