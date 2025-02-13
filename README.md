@@ -37,7 +37,7 @@ The universe covers 18-65 year old non-government employees, working full time (
 
 <h3>Workforce population estimates</h3>
 
-The CPS is a more reliable estimator of the U.S. population and labor force. For this reason we use the CPS's estimates of the 18-65 year old, non-goverment full-time laborforce, by metro and non-metro status. These estimates are applied to the SIPP's retirement plan access, participation, and employer matching estimates to obtain the total number of workers who are left out.
+The CPS is a more reliable estimator of the U.S. population and labor force than the SIPP. For this reason we use the CPS's estimates of the 18-65 year old, non-goverment full-time laborforce, by metro and non-metro status. These estimates are applied to the SIPP's retirement plan access, participation, and employer matching estimates to obtain the total number of workers who are left out.
 
 <h3>Universe Definitions:</h3>
 
