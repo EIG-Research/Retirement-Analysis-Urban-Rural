@@ -37,7 +37,7 @@ The universe covers 18-65 year old non-government employees, working full time (
 
 <h3>Workforce population estimates</h3>
 
-The CPS is a more reliable estimator of the U.S. population and labor force than the SIPP. For this reason we use the CPS's estimates of the 18-65 year old, non-goverment full-time laborforce, by metro and non-metro status. These estimates are applied to the SIPP's retirement plan access, participation, and employer matching estimates to obtain the total number of workers who are left out.
+The CPS is a more reliable estimator of the U.S. population and labor force than the SIPP. For this reason we use the CPS's estimates of the 18-65 year old, non-government full-time laborforce, by metro and non-metro status. These estimates are applied to the SIPP's retirement plan access, participation, and employer matching estimates to obtain the total number of workers who are left out.
 
 <h3>Universe Definitions:</h3>
 
@@ -148,8 +148,8 @@ see [DCPLANCJ](https://www.federalreserve.gov/econres/files/bulletin.macro.txt)
 
 We select the random forest as our non-parametric estimator for the following reasons:
 1. Random forests do well with combining categorical and numerical data types; our model has both.
-2. It handles non-lineary relationships; and like all non-parametric estimators makes minimnal assumptions about the underlying distribution.
-3. Random forests are robust, being built on n-many decision trees, which makes it well-equiped to manage noisy data, and high-variance trees. This is particularly useful for the SIPP, which is noisy.
+2. It handles non-linear relationships; and like all non-parametric estimators makes minimal assumptions about the underlying distribution.
+3. Random forests are robust, being built on n-many decision trees, which makes it well-equipped to manage noisy data, and high-variance trees. This is particularly useful for the SIPP, which is noisy.
 4. It allows for constructing probability predictions of dependent variables based on different input values of independent variables.
 
 Our random forest models consist of 500 decision trees. Each model is run 100 times (5,000 trees in total) to construct a confidence interval on the RF estimator.
