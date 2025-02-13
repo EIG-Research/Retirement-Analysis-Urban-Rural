@@ -34,6 +34,7 @@ library(ranger)
 library(ggplot2)
 library(tibble)
 library(scales)
+library(openxlsx)
 
 # set user path
 project_directories <- list(
@@ -260,7 +261,7 @@ set.seed(42)  # For reproducibility
 
 ###########################################################
 # generate prediction matrix for different characteristics
-
+      
 # find the representative agent within the data set
 rep_agent <- sipp_2023_subset %>% select(age, education, income, employer_size) %>%
   summarise_all(., median) %>%
@@ -278,24 +279,25 @@ rep_agent
 access_ranked_industries <- read.csv(file.path(output_path, "retirement_by_industry.csv"))
 minmax.industries <- c(access_ranked_industries %>% filter(SHARE_RETIREMENT_ACCESS == min(SHARE_RETIREMENT_ACCESS)) %>% .$INDUSTRY_BROAD,
   access_ranked_industries %>% filter(SHARE_RETIREMENT_ACCESS == max(SHARE_RETIREMENT_ACCESS)) %>% .$INDUSTRY_BROAD)
-      
-# permute by minimum and maximum values of age, education, employer size, income, and industry by retirement
-# access; then duplicate the predictions for rural
-permute_agents <- bind_rows(
-  rep_agent %>% mutate(age = replace(age, 1, list(c(rep_agent$age, (18+30)/2, (55+65)/2)))) %>% unnest_longer(age),
-  rep_agent %>% mutate(education = replace(education, 1, list(c(sipp_2023_subset %>% select(education) %>% min(),
-                                                                sipp_2023_subset %>% select(education) %>% max())))) %>%
-    unnest_longer(education),
-  rep_agent %>% mutate(employer_size = replace(employer_size, 1, list(c(sipp_2023_subset %>% select(employer_size) %>% min(),
-                                                                        sipp_2023_subset %>% select(employer_size) %>% max())))) %>%
-    unnest_longer(employer_size),
-  rep_agent %>% mutate(income = replace(income, 1, list(c(median(sipp_2023_subset %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
-                                 median(sipp_2023_subset %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
-    unnest_longer(income),
-  rep_agent %>% mutate(industry = replace(industry, 1, list(minmax.industries))) %>%
-    unnest_longer(industry)
-) %>% mutate(metro_status = replace(metro_status, which(metro_status == 1),
-                                    list(c(1, 0)))) %>% unnest_longer(metro_status)
+
+##### Alternative representation with more permutations ####
+# # permute by minimum and maximum values of age, education, employer size, income, and industry by retirement
+# # access; then duplicate the predictions for rural
+# permute_agents <- bind_rows(
+#   rep_agent %>% mutate(age = replace(age, 1, list(c(rep_agent$age, (18+30)/2, (55+65)/2)))) %>% unnest_longer(age),
+#   rep_agent %>% mutate(education = replace(education, 1, list(c(sipp_2023_subset %>% select(education) %>% min(),
+#                                                                 sipp_2023_subset %>% select(education) %>% max())))) %>%
+#     unnest_longer(education),
+#   rep_agent %>% mutate(employer_size = replace(employer_size, 1, list(c(sipp_2023_subset %>% select(employer_size) %>% min(),
+#                                                                         sipp_2023_subset %>% select(employer_size) %>% max())))) %>%
+#     unnest_longer(employer_size),
+#   rep_agent %>% mutate(income = replace(income, 1, list(c(median(sipp_2023_subset %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
+#                                  median(sipp_2023_subset %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
+#     unnest_longer(income),
+#   rep_agent %>% mutate(industry = replace(industry, 1, list(minmax.industries))) %>%
+#     unnest_longer(industry)
+# ) %>% mutate(metro_status = replace(metro_status, which(metro_status == 1),
+#                                     list(c(1, 0)))) %>% unnest_longer(metro_status)
 
 # run random forest model 100 times to generate average prediction
 bootstrap_prediction <- function(model_formula, model_data, model_weights,
@@ -314,32 +316,34 @@ bootstrap_prediction <- function(model_formula, model_data, model_weights,
   }
   results %>% summarise_all(., mean)
 }
+# 
+# set.seed(42) # for reproducibility
+# 
+# # generate probability array and convert to matrix 
+# prob.array <- bootstrap_prediction(model_formula = access ~ age + industry + income + education + metro_status + employer_size,
+#                                    model_data = sipp_2023_subset,
+#                                    model_weights = sipp_2023_subset$WPFINWGT,
+#                                    predict_data = permute_agents)
 
-set.seed(42) # for reproducibility
-
-# generate probability array and convert to matrix 
-prob.array <- bootstrap_prediction(model_formula = access ~ age + industry + income + education + metro_status + employer_size,
-                                   model_data = sipp_2023_subset,
-                                   model_weights = sipp_2023_subset$WPFINWGT,
-                                   predict_data = permute_agents)
 treatment_labels <- c("age 24",
                      "age 60",
                      "high school or less",
                      "bachelors or above",
-                     "<= 10 workers",
-                     ">= 1000 workers",
                      "lowest income decile",
                      "highest income decile",
+                     "<= 10 workers",
+                     ">= 1000 workers",
                      "worst access industry",
                      "best access industry")
-prob.matrix <- (as.data.frame(split(as.numeric(prob.array[1,]), 1:2)) %>%
-                  rename(urban = X1, rural = X2)) %>%
-  mutate(urban = percent(urban + (urban == 0)*prob.array[1,1], accuracy = 0.01),
-         rural = percent(rural, accuracy = 0.01)) %>%
-  mutate(labels = c("representative agent", treatment_labels)) %>% relocate(labels) %>%
-  mutate_all(~unlist(.))
 
-# Alternative representation with more permutations
+# prob.matrix <- (as.data.frame(split(as.numeric(prob.array[1,]), 1:2)) %>%
+#                   rename(urban = X1, rural = X2)) %>%
+#   mutate(urban = percent(urban + (urban == 0)*prob.array[1,1], accuracy = 0.01),
+#          rural = percent(rural, accuracy = 0.01)) %>%
+#   mutate(labels = c("representative agent", treatment_labels)) %>% relocate(labels) %>%
+#   mutate_all(~unlist(.))
+
+# Final prediction matrix, upper triangular representation
 # Function generating each row in the permutations
 create_permutation <- function(base){
   bind_rows(
@@ -349,12 +353,12 @@ create_permutation <- function(base){
     base %>% mutate(education = replace(education, 1, list(c(sipp_2023_subset %>% select(education) %>% min(),
                                                                   sipp_2023_subset %>% select(education) %>% max())))) %>%
       unnest_longer(education),
+    base %>% mutate(income = replace(income, 1, list(c(median(sipp_2023_subset %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
+                                                       median(sipp_2023_subset %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
+      unnest_longer(income),
     base %>% mutate(employer_size = replace(employer_size, 1, list(c(sipp_2023_subset %>% select(employer_size) %>% min(),
                                                                           sipp_2023_subset %>% select(employer_size) %>% max())))) %>%
       unnest_longer(employer_size),
-    base %>% mutate(income = replace(income, 1, list(c(median(sipp_2023_subset %>% filter(YEAR_INC_QT == min(YEAR_INC_QT)) %>% .$income),
-                                                            median(sipp_2023_subset %>% filter(YEAR_INC_QT == max(YEAR_INC_QT)) %>% .$income))))) %>%
-      unnest_longer(income),
     base %>% mutate(industry = replace(industry, 1, list(minmax.industries))) %>%
       unnest_longer(industry)
   )
@@ -374,15 +378,17 @@ prob.array.matform <- bootstrap_prediction(model_formula = access ~ age + indust
                                            model_data = sipp_2023_subset,
                                            model_weights = sipp_2023_subset$WPFINWGT,
                                            predict_data = permute_agents_matrix)
-prob.array.matform <- prob.array.matform*100
-prob.matform <- matrix(prob.array.matform, nrow = nrow(first_row), ncol = nrow(first_row))
-prob.matform[upper.tri(prob.matform, diag = TRUE)] <- 0
-excl_h <- seq(from = 4, to = nrow(first_row), by = 2)
-prob.matform[cbind(excl_h, excl_h - 1)] <- 0
-prob.matform[1,1] <- prob.matform[1,1] + prob.array.matform[1]
-prob.matform <- as.data.frame(prob.matform[,c(-11,-12)])
-prob.matform <- prob.matform %>% rename_with(~c("urban", "rural", treatment_labels[1:(length(treatment_labels)-2)])) %>%
-  mutate(labels = c("urban", "rural", treatment_labels)) %>% relocate(labels) %>%
+prob.matform <- matrix(prob.array.matform*100, nrow = nrow(first_row), ncol = nrow(first_row))
+prob.matform[lower.tri(prob.matform, diag = TRUE)] <- 0
+excl_v <- seq(from = 4, to = nrow(first_row), by = 2)
+prob.matform[cbind(excl_v - 1, excl_v)] <- 0
+prob.matform[1,1] <- prob.array.matform[1]*100
+prob.matform[1,2] <- prob.array.matform[2]*100
+prob.matform <- as.data.frame(prob.matform[c(-11,-12),])
+prob.matform <- prob.matform %>% rename_with(~c("representative agent", "rural",
+                                                treatment_labels)) %>%
+  mutate(labels = c("representative agent", "rural",
+                    treatment_labels[1:(length(treatment_labels)-2)])) %>%
   mutate_all(~unlist(.))
 
 ############################################
@@ -394,8 +400,8 @@ setwd(output_path)
     write.csv(matching_results, "rf_matching.csv")
     write.csv(participation_results, "rf_participation.csv")
     write.csv(account_value_results, "rf_account_value.csv")
-    write.csv(prob.matrix, "rf_prediction_matrix.csv")
-    write.csv(prob.matform, "rf_prediction_matrix_alternative.csv")
+#    write.csv(prob.matrix, "rf_prediction_matrix_alternative.csv")
+    write.xlsx(prob.matform, "rf_prediction_matrix.xlsx")
     
   # combine results for datawrapper display.
       access_datawr = access_results %>% select(variable, importance_scaled) %>%
