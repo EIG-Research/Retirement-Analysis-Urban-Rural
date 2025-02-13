@@ -333,7 +333,7 @@ treatment_labels <- c("age 24",
                      "worst access industry",
                      "best access industry")
 prob.matrix <- (as.data.frame(split(as.numeric(prob.array[1,]), 1:2)) %>%
-                  rename(urban = X1, rural = X2) - prob.array[1,1]) %>%
+                  rename(urban = X1, rural = X2)) %>%
   mutate(urban = percent(urban + (urban == 0)*prob.array[1,1], accuracy = 0.01),
          rural = percent(rural, accuracy = 0.01)) %>%
   mutate(labels = c("representative agent", treatment_labels)) %>% relocate(labels) %>%
@@ -375,8 +375,7 @@ prob.array.matform <- bootstrap_prediction(model_formula = access ~ age + indust
                                            model_weights = sipp_2023_subset$WPFINWGT,
                                            predict_data = permute_agents_matrix)
 prob.array.matform <- prob.array.matform*100
-prob.matform <- matrix(prob.array.matform - prob.array.matform[[1]],
-                       nrow = nrow(first_row), ncol = nrow(first_row))
+prob.matform <- matrix(prob.array.matform, nrow = nrow(first_row), ncol = nrow(first_row))
 prob.matform[upper.tri(prob.matform, diag = TRUE)] <- 0
 excl_h <- seq(from = 4, to = nrow(first_row), by = 2)
 prob.matform[cbind(excl_h, excl_h - 1)] <- 0
