@@ -34,7 +34,6 @@ library(ranger)
 library(ggplot2)
 library(tibble)
 library(scales)
-library(purrr)
 
 # set user path
 project_directories <- list(
@@ -375,6 +374,7 @@ prob.array.matform <- bootstrap_prediction(model_formula = access ~ age + indust
                                            model_data = sipp_2023_subset,
                                            model_weights = sipp_2023_subset$WPFINWGT,
                                            predict_data = permute_agents_matrix)
+prob.array.matform <- prob.array.matform*100
 prob.matform <- matrix(prob.array.matform - prob.array.matform[[1]],
                        nrow = nrow(first_row), ncol = nrow(first_row))
 prob.matform[upper.tri(prob.matform, diag = TRUE)] <- 0
