@@ -18,7 +18,7 @@ All links are current at the time of publication. Contact Sarah Eckhardt with an
 
       SCF is a triennial cross-sectional survey of U.S. families. The survey data include information on families’ balance sheets, pensions, income, and demographic characteristics.
 
-      We rely on the 2022 SCF survey for the analysis in this piece.
+      We rely on the 2022 SCF survey for the analysis in this piece. SCF is not the primary dataset used in this piece, but as the primary source for retirement savings values, we use it for robustness checks.
 
 3. Census 2017 Industry Codes: available for download from the Census [here](https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2017-industry-code-list-with-crosswalk.xlsx)
 
