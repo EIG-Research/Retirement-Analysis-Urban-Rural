@@ -12,7 +12,7 @@ All links are current at the time of publication. Contact Sarah Eckhardt with an
 
       SIPP is a nationally representative longitudinal survey that provides information on the dynamics of income, employment, household composition, and government program participation. As the survey interviews individuals for several years over monthly surveys, it provides information about changes in household composition and economic circumstances over time.
 
-      We rely on the 2023 SIPP survey for the analysis in this piece. Historical survey versions are used for generational cuts.
+      We rely on the 2023 SIPP survey for the analysis in this piece.
 
 2. Survey of Consumer Finances (SCF): available for download from the Federal Reserve [here](https://www.federalreserve.gov/econres/scfindex.htm)
 
