@@ -160,4 +160,4 @@ For display, we use the RF importance estimates to predict the probabilities tha
 *** 
 <h2>Robustness checks</h2>
 
-We run sample-size robustness checks on industry, and industry X metro cuts. We check sample sizes, design effects, and the size of standard errors and confidence intervals. Industry based analysis stands up to the robustness checks; industry X metro cuts do not. See [robustness_checks.Rmd](https://github.com/SarahMEckhardt/Retirement-Analysis-Urban-Rural/blob/main/Code/robustness%20checks.Rmd)
+We run sample-size robustness checks on industry, and industry X metro cuts. We check sample sizes, design effects, and the size of standard errors and confidence intervals. Industry based analysis stands up to the robustness checks; industry X metro cuts do not. See [robustness checks.Rmd](https://github.com/SarahMEckhardt/Retirement-Analysis-Urban-Rural/blob/main/Code/robustness%20checks.Rmd)
