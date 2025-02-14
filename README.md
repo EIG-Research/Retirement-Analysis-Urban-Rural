@@ -155,3 +155,9 @@ We select the random forest as our non-parametric estimator for the following re
 Our random forest models consist of 500 decision trees. Each model is run 100 times (5,000 trees in total) to construct a confidence interval on the RF estimator.
 
 For display, we use the RF importance estimates to predict the probabilities that a set of agents with different attributes will have access to an employer-based retirement plan. We start with a representative agent with median age, education, income, and employer size, living in a metropolitan area and working in the largest industry group. We perturb each variable by changing its value to its minimum and maximum and report how much the predicted probability changes as a result.
+
+
+*** 
+<h2>Robustness checks</h2>
+
+We run sample-size robustness checks on industry, and industry X metro cuts. We check sample sizes, design effects, and the size of standard errors and confidence intervals. Industry based analysis stands up to the robustness checks; industry X metro cuts do not. See [robustness_checks.Rmd](https://github.com/SarahMEckhardt/Retirement-Analysis-Urban-Rural/blob/main/Code/robustness%20checks.Rmd)
