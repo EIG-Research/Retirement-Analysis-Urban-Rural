@@ -182,9 +182,9 @@ It is worth noting that our sample does not cover all counties for which there i
 
 2. The state’s population is entirely metropolitan. Respondents living in states that do not fit these criteria are coded as non-identified on metropolitan status.
 
-The EIG's county classification provides a more detailed county type scheme than the Census’s standard 5,000 residents/2,000 housing units cutoff. Of the 1,958 counties classified as non-metro by the OBM, 88% are classified as being rural according to August’s classification. The remaining 12% are small towns. This provides strong support for using non-metro as a proxy for rural. 
+The EIG's county classification provides a more detailed county type scheme than the Census’s standard 5,000 residents/2,000 housing units cutoff. Of the 1,958 counties classified as non-metro by the OBM, 88% are classified as being rural according to August’s classification. The remaining 12% are small towns. This provides strong support for using non-metro as a proxy for rural. See the EIG's Github County Classification repository for more information.
 
-|EIG Categorisation | metro county | non-metro county|
+|EIG Category | metro county | non-metro county|
 | ----------------- | ------------ | --------------- |
 | Large urban | 83 | 0 |
 | Mid-sized urban | 101 | 0 | 
