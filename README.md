@@ -161,3 +161,35 @@ For display, we use the RF importance estimates to predict the probabilities tha
 <h2>Robustness checks</h2>
 
 We run sample-size robustness checks on industry, and industry X metro cuts. We check sample sizes, design effects, and the size of standard errors and confidence intervals. Industry based analysis stands up to the robustness checks; industry X metro cuts do not. See [robustness checks.Rmd](https://github.com/SarahMEckhardt/Retirement-Analysis-Urban-Rural/blob/main/Code/robustness%20checks.Rmd)
+
+
+***
+<h2>Metro/non-metro versus urban/rural definitions.</h2>
+
+The Survey of Income and Program Participation has limited geographic information about respondents; with only state of residence and the Office of Management and Budget (OMB) metropolitan and non-metropolitan areas, defined at the county-level. For ease of interpretation we would ideally compare urban to rural counties for the retirement piece. This memo explores how good of a proxy the metro/non-metro definitions are for rurality.
+
+<h4>Metro/non-metro methodology</h4>
+
+In 2023, the OMB delineated metropolitan counties with the following criteria:
+
+1. Central counties with one or more urban areas with populations of 50,000 or more people. OMB uses the Census urban definition here, which includes densely developed areas with 2,000 or more housing units or 5,000 or more residents.
+
+2. Outlying counties that are economically tied to the central counties as measured by labor-force commuting. Outlying counties are included if at least 25 percent of workers living in the county commute to the central counties, or if at least 25 percent of the employment in the county consists of workers coming out from the central counties.
+
+It is worth noting that our sample does not cover all counties for which there is survey data. SIPP suppresses metro/non-metro information in the public-use microdata for confidentiality. The survey does identify metropolitan and nonmetropolitan status for respondents where:
+
+1. Both the metropolitan and non-metropolitan populations are over 250,000 for a given state.
+
+2. The state’s population is entirely metropolitan. Respondents living in states that do not fit these criteria are coded as non-identified on metropolitan status.
+
+The EIG's county classification provides a more detailed county type scheme than the Census’s standard 5,000 residents/2,000 housing units cutoff. Of the 1,958 counties classified as non-metro by the OBM, 88% are classified as being rural according to August’s classification. The remaining 12% are small towns. This provides strong support for using non-metro as a proxy for rural. 
+
+|EIG Categorisation | metro county | non-metro county|
+| ----------------- | ------------ | --------------- |
+| Large urban | 83 | 0 |
+| Mid-sized urban | 101 | 0 | 
+| Rural | 418 | 1725 | 
+| Small town | 132 | 233 |  
+| Small urban | 233 | 0 |
+| Suburban | 229 | 0 | 
+| Total | 1186 | 1958 |
