@@ -112,8 +112,6 @@ load("SIPP_2023_WRANGLED.RData")
       
 ###########
 # industry
-
-# need to generate that chart....
       
       sipp_2023 %>%
         filter(ANY_RETIREMENT_ACCESS != "Missing") %>%
@@ -293,6 +291,8 @@ load("SIPP_2023_WRANGLED.RData")
      left_join(age) %>%
      left_join(low_access) %>%
      left_join(large_employer)
+   
+   stats
 
    setwd(output_path)
     write.csv(stats, "summary_stats_urban_rural_discrepancies.csv")
