@@ -79,3 +79,15 @@ ret_sipp_2023 <- ret_sipp_2023 %>%
 # save output
 setwd(output_path)
 write.csv(ret_sipp_2023, "urban_rural_retirement.csv", row.names = FALSE)
+
+
+# crosstab: retirement match, access
+sipp_2023 %>%
+  filter(METRO_STATUS == "Non-metropolitan area") %>%
+  ungroup() %>%
+  group_by(MATCHING, ANY_RETIREMENT_ACCESS) %>%
+  summarise(count = sum(WPFINWGT)) %>%
+  
+  # we want -- the share who has access, but no match
+  ungroup() %>% mutate(sum = sum(count),
+                       shae = count/sum*100)
