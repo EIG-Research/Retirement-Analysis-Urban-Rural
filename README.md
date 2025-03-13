@@ -22,11 +22,13 @@ All links are current at the time of publication. Contact Sarah Eckhardt with an
 
 3. Census 2017 Industry Codes: available for download from the Census [here](https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2017-industry-code-list-with-crosswalk.xlsx)
 
+     As SIPP does not label industry codes, we crosswalk the relevant codes for analysis. SIPP 2023 relies on the 2017 version of Census's industry codes.
+
 4. Census Current Population Survey (CPS) downloaded from IPUMS [here](https://cps.ipums.org/cps/)
 
    CPS is a monthly survey covering a wealth of information about the socioeconomic state of the United States.
 
-   We rely on the 2023 sample for the analysis in this piece.
+   We rely on the 2023 sample for the analysis in this piece, for labor force population estimates.
 
 ****
 
