@@ -317,26 +317,11 @@ avg_ret <- scf_2022 %>%
   rename(SCF_AVG_RETIREMENT_ACCOUNT = weighted_RETIREMENT_ACCT_VAL) %>%
   mutate(
     SIPP_AVG_RETIREMENT_ACCOUNT = sipp_2023 %>%
-      mutate(across(TVAL_RET, ~.x * WPFINWGT, .names = "weighted_{.col}")) %>%
-      summarise(across(weighted_TVAL_RET, ~sum(.x)/sum(WPFINWGT))) %>%
-      .$weighted_TVAL_RET
+      ungroup() %>%
+      filter(METRO_STATUS != "Not identified") %>%
+      summarise(weighted.mean(TVAL_RET, w = WPFINWGT, na.rm = TRUE))
   )
 
-avg_ret # SIPP reports nearly $10,000 more retirment savings on average than SCF, not counting the inflation from SIPP's 2021 dollars to SCF's 2022 dollars
-
-# two-sided t-test for weight-normalized account values
-weighted_scf_ret <- scf_2022 %>%
-  mutate(across(RETIREMENT_ACCT_VAL,~.x*WGT,.names="weighted_{.col}")) %>%
-  mutate(across(weighted_RETIREMENT_ACCT_VAL, ~.x/sum(WGT))) %>%
-  select("weighted_RETIREMENT_ACCT_VAL")
-
-weighted_sipp_ret <- sipp_2023 %>%
-  mutate(across(TVAL_RET,~.x*WPFINWGT,.names="weighted_{.col}")) %>%
-  mutate(across(weighted_TVAL_RET, ~.x/sum(WPFINWGT))) %>%
-  select("weighted_TVAL_RET")
-
-t.test(weighted_scf_ret, weighted_sipp_ret)
-
-# the p-value is close to 0 and the 95% CI is [-5.23,-3.21], hence SIPP has larger mean account size than SCF
+avg_ret # SIPP reports nearly $7,500 more retirment savings on average than SCF, not counting the inflation from SIPP's 2021 dollars to SCF's 2022 dollars
 ```
 
