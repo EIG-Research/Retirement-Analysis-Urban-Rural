@@ -81,6 +81,14 @@ setwd(output_path)
 write.csv(ret_sipp_2023, "urban_rural_retirement.csv", row.names = FALSE)
 
 
+# national mean retirement account value
+sipp_2023 %>%
+  ungroup() %>%
+  summarise(mean(TVAL_RET))
+  
+  summarise(weighted.mean(TVAL_RET, w = WPFINWGT, na.rm = TRUE))
+  
+
 # crosstab: retirement match, access
 sipp_2023 %>%
   filter(METRO_STATUS == "Non-metropolitan area") %>%

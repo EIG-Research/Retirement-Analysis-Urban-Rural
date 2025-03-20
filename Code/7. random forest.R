@@ -259,6 +259,7 @@ set.seed(42)  # For reproducibility
 # consider adding R^2 values.      
 # r2_value <- 1 - (sum((test_data$account_value - predict)^2) / sum((test_data$account_value - mean(test_data$account_value))^2))
 
+      
 ###########################################################
 # generate prediction matrix for different characteristics
       
