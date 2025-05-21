@@ -1,6 +1,6 @@
 <h1>Are Rural Americans left behind in the employer based retirement savings system?</h1>
 
-This respository includes the data and necessary code to support EIG's analysis of retirement descriptives. You can find the analysis on our website [here](INSERT LINK).
+This respository includes the data and necessary code to support EIG's analysis of retirement descriptives. You can find the analysis on our website [here](https://eig.org/rural-retirement-savings-system/).
 
 All links are current at the time of publication. Contact Sarah Eckhardt with any questions at sarah@eig.org.
 
